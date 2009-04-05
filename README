@@ -1,0 +1,54 @@
+WWW::Scripter, version 0.001 (alpha)
+
+For scripting web sites that have scripts
+
+This is a subclass of WWW::Mechanize that uses the W3C DOM and pro-
+vides scripting support.
+
+
+INSTALLATION
+
+The easiest way to install this module is to use the CPAN module or
+the cpan script:
+
+    [sudo] perl -MCPAN -e "install WWW::Scripter"
+
+    [sudo] cpan WWW::Scripter
+
+Or you can use the following:
+
+    perl Makefile.PL
+    make
+    make test
+    [sudo] make install
+
+
+DEPENDENCIES
+
+This module requires  perl  5.8.3 or higher (5.8.4  or  higher  recom-
+mended)  and the following modules,  which can be found on the  CPAN:
+
+  HTML::DOM 0.021 or higher
+  Hash::Util::FieldHash::Compat
+  LWP
+  URI
+  WWW::Mechanize
+
+DOCUMENTATION
+
+After installing, you can find documentation for these modules with
+the perldoc command.
+
+    perldoc WWW::Scripter
+
+Or try using man (it's faster, in my experience):
+
+    man WWW::Scripter
+
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2009 Father Chrysostomos
+
+This program is free software; you may redistribute it, modify it, or
+both, under the same terms as perl.

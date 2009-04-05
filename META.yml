@@ -1,0 +1,44 @@
+--- #YAML:1.0
+name:               WWW-Scripter
+version:            0.001
+abstract:           For scripting web sites that have scripts
+author:
+    - Father Chrysostomos <sprout at, um, cpan dot org>
+license:            unknown
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    Encode:               0
+    Exporter:             5.57
+    Hash::Util::FieldHash::Compat:  0
+    HTML::DOM:            0.021
+    HTML::DOM::Collection:  0
+    HTML::DOM::EventTarget:  0
+    HTML::DOM::Interface:  0.019
+    HTML::DOM::NodeList::Magic:  0.02
+    HTML::DOM::View:      0.018
+    HTTP::Headers::Util:  0
+    lib:                  0
+    LWP:                  5
+    LWP::Protocol:        0
+    overload:             0
+    Scalar::Util:         1.09
+    strict:               0
+    Test::More:           0
+    URI:                  0
+    URI::data:            0
+    URI::file:            0
+    utf8:                 0
+    warnings:             0
+    WWW::Mechanize:       1.3
+    WWW::Mechanize::Image:  0
+    WWW::Mechanize::Link:  0
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.48
+meta-spec:
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4
