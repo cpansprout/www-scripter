@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.001';
+our $VERSION = '0.002';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -15,7 +15,13 @@ use HTML::DOM::Interface 0.019 ':all';
 use HTML::DOM::View .018;
 use HTTP::Headers::Util 'split_header_words';
 use Scalar::Util qw 'blessed weaken';
-use WWW::Mechanize 1.2;
+use LWP::UserAgent;
+BEGIN {
+ require WWW::Mechanize;
+ VERSION WWW::Mechanize $LWP::UserAgent::VERSION >= 5.815 ? 1.5 : 1.2
+ # Version 1.5 is necessary for LWP 5.815 compatibility. Version 1.2 is
+ # needed otherwise for its handling of cookie jars during cloning.
+}
 our @ISA = qw( WWW::Mechanize HTML::DOM::View HTML::DOM::EventTarget );
 
 our @EXPORT_OK = qw/abort/;
@@ -410,26 +416,6 @@ sub _extract_images {
 
 sub back {
    shift->{page_stack}->go(-1)
-}
-
-sub credentials {
-        my $self = shift;
-
-        if (@_ == 4 || $self->{Scripter_gbc}) {
-            return $self->SUPER::credentials(@_);
-        }
-
-        @_ == 2
-            or $self->die( 'Invalid # of args for overridden credentials()' );
-
-        return @{ $self->{Scripter_cred} } = @_;
-}
-
-sub get_basic_credentials {
- my $self = shift;
- $self->{Scripter_cred} and return @{$self->{Scripter_cred}};
- local $self->{Scripter_gbc} = 1;
- $self->SUPER::get_basic_credentials(@_);
 }
 
 # ------------- Window interface ------------- #

@@ -1,7 +1,11 @@
 Revision history for WWW::Scripter
 
-Er, there haven’t actually *been* any changes yet. So much for the
-name of this file!
+0.002  9 April, 2009
+       One bug fix: The credentials method now works.
 
-0.01    ?? April, 2008
-        First release
+0.001  5 April, 2009
+       First release. This consists of code copied and pasted from
+       parts of WWW::Mechanize::Plugin::DOM and the experimental
+       plugin version of WWW::Mechanize at
+       <http://www-mechanize.googlecode.com/svn/wm/branches/plugins/>,
+       plus some new code to tape it all together.

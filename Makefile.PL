@@ -26,16 +26,17 @@ WriteMakefile(
 	strict                     => 0,
 	URI                        => 0,
 	warnings                   => 0,
-	WWW::Mechanize             => 1.3, # cookie clones
+	WWW::Mechanize             => 1.5, # compatibility with LWP 5.815
 	WWW::Mechanize::Image      => 0,
 	WWW::Mechanize::Link       => 0,
 # for testing:
-	lib         => 0,
-	Scalar'Util => 1.09, # refaddr
-	Test::More  => 0,
-	URI::data   => 0,
-	URI::file   => 0,
-	utf8        => 0,
+	lib           => 0,
+	LWP'UserAgent => 5.815, # handlers
+	Scalar'Util   => 1.09, # refaddr
+	Test::More    => 0,
+	URI::data     => 0,
+	URI::file     => 0,
+	utf8          => 0,
     },
     dist               => { COMPRESS => 'gzip -9f', SUFFIX => 'gz',
                             TAR => 'COPYFILE_DISABLE=1 tar' },

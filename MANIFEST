@@ -8,6 +8,7 @@ MANIFEST
 README
 t/blank.html
 t/clear_history.t
+t/credentials.t
 t/dom-callbacks.html
 t/dom-charset.html
 t/dom-charset2.html

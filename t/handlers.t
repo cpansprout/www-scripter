@@ -5,9 +5,12 @@ use strict;
 use Test::More tests => 5;
 use URI::file;
 
+$^W = 0;
+
 BEGIN {
     use_ok( 'WWW::Scripter', 'abort' );
 }
+VERSION LWP::UserAgent 5.815;
 
 is \&abort, \&WWW::Scripter::abort, 'abort export';
 
