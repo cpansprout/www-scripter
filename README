@@ -1,9 +1,14 @@
-WWW::Scripter, version 0.001 (alpha)
+WWW::Scripter, version 0.004 (alpha)
 
 For scripting web sites that have scripts
 
 This is a subclass of WWW::Mechanize that uses the W3C DOM and pro-
 vides scripting support.
+
+
+CHANGES IN THIS RELEASE
+
+The frames method no longer dies when the page is not HTML.
 
 
 INSTALLATION

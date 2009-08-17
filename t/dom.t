@@ -618,3 +618,24 @@ END
 	 'parent of inner frame';
 	is $m->parent, $m, 'top-level window is its own parent';
 }
+
+use tests 1; # re-use of document objects when browsing history
+{
+ my $w = new WWW::Scripter;
+ $w->get("about:blank");
+ my @refaddrs = refaddr $w->document;
+ $w->get("data:text/html,foo");
+ push @refaddrs, refaddr $w->document;
+ $w->back;
+ push @refaddrs, refaddr $w->document;
+ like join('-',@refaddrs), qr/^(\d+)-(?!\1)\d+-\1\z/,
+  'going back reuses the same document object';
+}
+
+use tests 2; # frames method with non-HTML documents
+{            # This used to die before version 0.004
+ my $w = new WWW::Scripter;
+ $w->get("data:text/plain,");
+ is +()=$w->frames, 0, 'frames returns 0 in list context with a text doc';
+ is @{ $w->frames }, 0, 'frames collection is empty with a text doc';
+}

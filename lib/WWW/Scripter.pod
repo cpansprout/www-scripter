@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.002 (alpha)
+0.004 (alpha)
 
 =head1 SYNOPSIS
 
@@ -374,6 +374,11 @@ about:blank. This is not yet the case.
 
 URL fragments are not supported properly yet. (A link to a fragment on the
 current page is not supposed to reload it, but it does.)
+
+=item *
+
+C<reload> does not replace the response object with a new one. This causes
+problems for plugins that identify the page by response object.
 
 =back
 

@@ -1,5 +1,13 @@
 Revision history for WWW::Scripter
 
+0.004  16 August, 2009
+     • The  frames  method no longer dies when the page is  not  HTML.
+
+0.003  15 August, 2009
+     • When you go back  (or forward)  to a page,  the same  document
+       object is  used  once  more.  It  used  to  be  parsed  afresh.
+     • Detecting the charset now works with LWP 5.827 and later.
+
 0.002  9 April, 2009
        One bug fix: The credentials method now works.
 

@@ -1,8 +1,14 @@
 #!perl -T
 
+BEGIN {
+ 
+}
+
 use warnings;
 use strict;
-use Test::More tests => 5;
+use Test::More eval 'use LWP::UserAgent 5.815;1'
+ ? (tests => 5)
+ : (skip_all => 'LWP::UserAgent 5.815 required for these tests');
 use URI::file;
 
 $^W = 0;
@@ -10,7 +16,6 @@ $^W = 0;
 BEGIN {
     use_ok( 'WWW::Scripter', 'abort' );
 }
-VERSION LWP::UserAgent 5.815;
 
 is \&abort, \&WWW::Scripter::abort, 'abort export';
 
