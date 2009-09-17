@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.004 (alpha)
+0.005 (alpha)
 
 =head1 SYNOPSIS
 
@@ -43,15 +43,43 @@ can think of it as short for either 'WWW::Scripter' or 'window'.
 
 =head2 Constructor
 
- my $w = new WWW::Scripter @args
+ my $w = new WWW::Scripter %args
 
-See L<WWW::Mechanize> and L<LWP::UserAgent> for details on what arguments
+The constructor accepts named arguments. There are only two that 
+WWW::Scripter itself deals with directly. The rest are passed on to the
+superclass. See L<WWW::Mechanize> and L<LWP::UserAgent> for details on what
+other arguments
 the constructor accepts.
+
+The two arguments are:
+
+=over
+
+=item max_docs
+
+The maximum number of document objects to keep in history (along with their
+corresponding request and response objects). If
+this is omitted, Mech's C<stack_depth> + 1 will be used. This is off by one
+because C<stack_depth> is the number of pages you can go back to, so it is
+one less than the number of recorded pages. C<max_docs> considers 0 to be
+equivalent to infinity.
+
+=item max_history
+
+If the number of items in history exceeds C<max_docs>, WWW::Scripter will still keep the request objects (so
+you can go back more than C<max_docs> times and previously visited pages
+will reload). C<max_history> restricts the total number of items in history
+(whether full document objects or just requests). 0 is equivalent to 
+infinity.
+
+=back
 
 =head2 The Window Interface
 
 In addition to the methods listed here, see also L<HTML::DOM::View> and
-L<HTML::DOM::EventTarget>.
+L<HTML::DOM::EventTarget>. (WWW::Scripter does not itself inherit from
+EventTarget, but provides the same interface, and also a C<DOES>
+method that returns true for 'HTML::DOM::EventTarget'.)
 
 =over
 
@@ -240,7 +268,30 @@ This clears the history, preventing C<back> from working until after the
 next request, and freeing up some memory. If supplied with a true
 argument, it also clears the current page. It returns C<$w>.
 
-=back
+=item max_history
+
+=item max_history ( $new_value )
+
+=item max_docs
+
+=item max_docs ( $new_value )
+
+These two return what was passed to the constructor, optionally setting it.
+
+=back
+
+=head1 CAVEATS
+
+WWW::Scripter does not implement any event loop, so you have to call
+C<check_timers> yourself to trigger any timeouts. After fetching a page,
+you could do something like this:
+
+  sleep 1, $w->check_timers  while $w->count_timers;
+
+but beware that this may cause an infinite loop if a timeout sets another
+timeout. It may also cause problems with future versions of WWW::Scripter
+that support C<setInterval>. You basically have to know what works with the
+pages you are browsing.
 
 =head1 THE C<%WindowInterface> HASH
 
@@ -315,7 +366,7 @@ If a plugin does not provide an object, an error will be thrown if options
 are passed to C<use_plugin>.
 
 The C<init> method can override this, however. When I<it> is called, its
-its third argument is a reference to an array containing the options passed
+third argument is a reference to an array containing the options passed
 to C<use_plugin>. The contents of that same array will be used when 
 C<options> is called,
 so C<init> can modify it and even prevent C<options> from being called
@@ -342,8 +393,8 @@ See LWP's L<Handlers|LWP::UserAgent/Handlers> feature.
 
 From within LWP's C<request_*> and C<response_*> handlers, you can call 
 C<WWW::Scripter::abort> to abort the request 
-and prevent a new entry from being created in browser history via 
-C<_push_page_stack>.
+and prevent a new entry from being created in browser history. (The
+JavaScript plugin does this with javascript: URLs.)
 
 WWW::Scripter will export this function upon request:
 
@@ -363,22 +414,14 @@ fact that so many features are still missing):
 
 =item *
 
-Mech's C<stack_depth> option is not honoured.
+There is no support for XHTML, but HTML::Parser can handle most XHTML pages
+anyway, so
+maybe this is not a problem.
 
 =item *
 
-When no browsing has happened, the current page is supposed to be 
-about:blank. This is not yet the case.
-
-=item *
-
-URL fragments are not supported properly yet. (A link to a fragment on the
-current page is not supposed to reload it, but it does.)
-
-=item *
-
-C<reload> does not replace the response object with a new one. This causes
-problems for plugins that identify the page by response object.
+There is nothing to prevent infinite recursion when frames have
+circular references.
 
 =back
 
@@ -388,13 +431,13 @@ L<perl> 5.8.3 or higher (5.8.4 or higher recommended)
 
 L<Hash::Util::FieldHash::Compat>
 
-L<HTML::DOM> 0.021 or higher
+L<HTML::DOM> 0.030 or higher
 
 L<LWP>
 
 L<URI>
 
-L<WWW::Mechanize>
+L<WWW::Mechanize> 1.2 or higher
 
 =head1 AUTHOR & COPYRIGHT
 

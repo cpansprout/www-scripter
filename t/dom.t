@@ -2,6 +2,7 @@
 
 # Slightly modified version of WWW::Mechanize::Plugin::DOM’s dom.t
 # (for now).
+# Tests are gradually being moved from here into other files.
 
 use strict; use warnings;
 use lib 't';
@@ -9,8 +10,9 @@ use Test::More;
 
 use utf8;
 
+use HTML'DOM 0.03; # for the onload/unonload test
 use Scalar::Util 1.09 'refaddr';
-use URI::data;
+use URI;
 use URI::file;
 use WWW::Scripter;
 
@@ -109,7 +111,7 @@ use tests 2; # charset
 }
 
 use tests 2; # get_text_content with different charsets
-{            # (bug in 0.002)
+{            # (bug in 0.002 [Mech plugin])
 	(my $m = new WWW::Scripter);
 	$m->get(URI::file->new_abs( 't/dom-charset.html' ));
 	like $m->content(format=>'text'), qr/Ce mai face\376\?/,
@@ -126,20 +128,36 @@ use tests 2; # get_text_content with different charsets
 		 'get_text_content on subsequent page';
 }
 
-use tests 2; # on(un)load
+use tests 5; # on(un)load
 {
 	my $events = '';
+	my $target;
 	(my $m = new WWW::Scripter)
 	 ->script_handler(
 			default => new ScriptHandler sub {}, sub {
 				my $code = $_[3];
-				sub { $events .= $code }
+				sub {
+				 $events .= $code; $target = shift->target
+				}
 			}
 	);
 	$m->get(URI::file->new_abs( 't/dom-onload.html' ));
 	is $events, 'onlode', '<body onload=...';
+	(my $doc = $m->document)->title('dom-onload modified');
+	is $target, $doc, 'target of load event';
+	$doc->addEventListener(
+	 'onload', sub { $events = "This should never happen." }
+	);
 	$m->get(new_abs URI'file 't/blank.html');
-	SKIP:{skip"unimplemented",1;is $events, 'onlodeonunlode'}
+	is $events, 'onlodeunlode', 'unload';
+	$m->document->title("blank modified");
+	$m->get('about:blank');
+	$m->back;
+	is $m->title, "blank modified",
+	 'absence of onunload causes documents to persist';
+	$m->back;
+	is $m->title, "",
+	 'presence of onunload causes documents to be discarded';
 }
 
 use tests 9; # scripts_enabled
@@ -202,7 +220,8 @@ use tests 1; # window as part of event dispatch chain
 	$m                           ->onfoo(sub { $targets .= '-w' });
 	$m->document                 ->onfoo(sub { $targets .= '-d' });
 	$m->document->documentElement->onfoo(sub { $targets .= '-h' });
-	$m->document->body           ->onfoo(sub { $targets .= '-b' });
+	$m->document->body      ->addEventListener( foo=>
+	        sub { $targets .= '-b' });
 	$m                      ->addEventListener( foo=>
 		sub { $targets .= '-w(c)' },1);
 	$m->document            ->addEventListener( foo=>
@@ -526,29 +545,6 @@ END
 	is $w->length, 1, 'window length when there is a frame';
 }
 
-use tests 1; # document.location
-{
-	my $m = new WWW::Scripter;
-	$m->get(data_url '');
-	is refaddr $m->document->location, refaddr $m->location,
-		'document->location';
-}
-
-use tests 3; # location->hash
-{
-# This just tests a bug fixed in 0.009. We still need tests for setting the
-# hash (and all other location properties).
-	my $script;
-	my $l = (my $m = new WWW::Scripter)->location;
-	$m->get('data:text/html,');
-	is $l->hash, '', 'location->hash when there is no fragment';
-	$m->get('data:text/html,#');
-	is $l->hash, '#', 'location->hash when URL ends in #';
-	$m->get('data:text/html,#fetvov');
-	is $l->hash, '#fetvov','location->hash when URL ends with #...';
-	
-}
-
 use tests 1; # gzipped scripts
 {
 	package ProtocolThatAlwaysReturnsTheSameThing;
@@ -638,4 +634,14 @@ use tests 2; # frames method with non-HTML documents
  $w->get("data:text/plain,");
  is +()=$w->frames, 0, 'frames returns 0 in list context with a text doc';
  is @{ $w->frames }, 0, 'frames collection is empty with a text doc';
+}
+
+use tests 4; # about:blank before browsing
+{
+ my $w = new WWW::Scripter;
+ is $w->uri, "about:blank",
+  "about:blank uri before browsing";
+ is $w->ct, "text/html", "ct before browsing";
+ is $w->response->content, "", "content before browsing";
+ ok $w->document,, "document before browsing";
 }

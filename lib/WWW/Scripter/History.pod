@@ -5,7 +5,7 @@ WWW::Scripter::History - History object for WWW::Scripter
 
 =head1 VERSION
 
-Version 0.004
+Version 0.005
 
 This module is still far from complete. It is mainly a 
 placeholder.
@@ -16,7 +16,7 @@ placeholder.
 
 =item length
 
-Returns the number of items in the browsers history.
+Returns the number of items in the browser's history.
 
 This is 1 when you
 haven't gone anywhere yet.

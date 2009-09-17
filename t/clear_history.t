@@ -27,13 +27,18 @@ like( $mech->content, qr/foofoo/,        'but leaves the page there' );
 $mech->clear_history();
 like( $mech->content, qr/foofoo/,             'even when I do it again' );
 $mech->clear_history('Come on, do it properly!');
-is( $mech->{uri}, undef,             "Alright, *now* it's gone." );
+# ~~~ It’s hard to test this without breaking encapsulation. The fact that
+#    ‘replacement is enabled’ (in HTML 5) parlance is not accessible from
+#     the public API, without actually changing the page and turning
+#     replacement off. Maybe we need some more methods, or history->length
+#     could return 0.
+is( $mech->{page_stack}[0][0], undef,        "Alright, *now* it's gone." );
 $mech->clear_history('again');
 is( $h->length, 1, "and repeating it" );
-is( $mech->{uri}, undef,              "doesn't seem" );
+is( $mech->{page_stack}[0][0], undef,         "doesn't seem" );
 $mech->clear_history();
 is( $h->length, 1, "to hurt" );
-is( $mech->{uri}, undef,              "at all" );
+is( $mech->{page_stack}[0][0], undef,         "at all" );
 
 $mech->get('data:text/html,');
 $mech->get('data:text/html,oooo');

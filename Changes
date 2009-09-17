@@ -1,7 +1,46 @@
 Revision history for WWW::Scripter
 
+0.005  17 September, 2010
+     • max_docs and max_history have been added. Mech’s stack_depth
+       is  now  honoured.  (max_docs  is  an  off-by-one  alias  to
+       stack_depth.)
+     • When no  browsing  has  happened,  the  current  page  is  now
+       about:blank.  (It used to be an uninitialised state  in  which
+       some methods, such as uri, would just die.)
+     • URL fragments are now supported.  They are now  stripped  from
+       URLs when the actual request is made (they used to be sent  to
+       the server).  Fetching a URL that differs from the current one
+       only by its fragment does not reload the page,  but does add a
+       history entry.  You can now use the location object to get the
+       URL with its fragment.  Use the uri method to get the real URL.
+     • location->replace now works correctly.  (It used to be a quick-
+       and-dirty ‘back’ followed by ‘get’.)
+     • location->reload  now actually reloads the  page.  In  version
+       0.002,  it would simply refresh the  page  from  the  response
+       object.  Version  0.003  broke  that  by  making  it  a  no-op.
+     • Support for onunload handlers
+     • onload handlers are now called on the window, not the body ele-
+       ment, with the document as the event target.
+     • WWW::Scripter  no longer inherits from  HTML::DOM::EventTarget,
+       but  it  still  provides  the  interface,  so  it  now  has  a
+       DOES method.
+     • Setting the value of the location  object’s  hash  and  search
+       attributes now works.  It used to be a no-op unless it was set
+       to the old value.
+     • The host, hostname, pathname, port, protocol, search and  href
+       methods of the  location  object  now  return  the  old  value
+       upon setting.
+     • The host and hostname methods of the location object have been
+       corrected  such  that  host  now  returns  the  port  as  well,
+       hostname  no longer returns the port,  setting  hostname  to a
+       string containing a port no longer sets the port  and  setting
+       host with a port number now works.  (In other words, they were
+       switched round and were a bit buggy, too.)
+     • I forgot to add the  CSS  interface  to  the  class_info.  Now
+       it’s there.
+
 0.004  16 August, 2009
-     • The  frames  method no longer dies when the page is  not  HTML.
+       The  frames  method no longer dies when the page is  not  HTML.
 
 0.003  15 August, 2009
      • When you go back  (or forward)  to a page,  the same  document

@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.004 (alpha)
+WWW::Scripter, version 0.005 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,7 +8,16 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-The frames method no longer dies when the page is not HTML.
+See the Changes file for the long version.
+
+• max_docs and max_history
+• When no browsing has happened,  the current page is now about:blank.
+• Correct handling of URL fragments
+• Various fixes to the location object
+• Support for onunload handlers
+• onload  events are now called on the window,  not the body  element.
+• class_info  now includes the CSS interfaces,  which  had  been  for-
+  gotten.
 
 
 INSTALLATION
@@ -28,16 +37,16 @@ Or you can use the following:
     [sudo] make install
 
 
-DEPENDENCIES
+PREREQUISITES
 
 This module requires  perl  5.8.3 or higher (5.8.4  or  higher  recom-
 mended)  and the following modules,  which can be found on the  CPAN:
 
-  HTML::DOM 0.021 or higher
+  HTML::DOM 0.030 or higher
   Hash::Util::FieldHash::Compat
   LWP
   URI
-  WWW::Mechanize
+  WWW::Mechanize 1.2 or higher
 
 DOCUMENTATION
 

@@ -7,6 +7,7 @@ Makefile.PL
 MANIFEST
 README
 t/blank.html
+t/class-info.t
 t/clear_history.t
 t/credentials.t
 t/dom-callbacks.html
@@ -17,8 +18,11 @@ t/dom-onload.html
 t/dom-test-script
 t/dom.t
 t/form_with_fields.html
+t/fragments.html
+t/fragments.t
 t/handlers.t
 t/history.t
+t/location.t
 t/plugin-cloning.t
 t/plugins.t
 t/tests.pm

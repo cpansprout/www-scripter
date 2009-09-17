@@ -2,27 +2,35 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.004';
+our $VERSION = '0.005';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
+use CSS'DOM'Interface;
 use Encode qw'encode decode';
 use Exporter 5.57 'import';
 use Hash::Util::FieldHash::Compat qw 'fieldhash fieldhashes';
 use HTML::DOM 0.021;
-use HTML::DOM::EventTarget;
+use HTML::DOM::EventTarget 0.03;
 use HTML::DOM::Interface 0.019 ':all';
 use HTML::DOM::View .018;
 use HTTP::Headers::Util 'split_header_words';
+use HTTP::Response;
+use HTTP::Request;
 use Scalar::Util qw 'blessed weaken';
 use LWP::UserAgent;
 BEGIN {
  require WWW::Mechanize;
- VERSION WWW::Mechanize $LWP::UserAgent::VERSION >= 5.815 ? 1.5 : 1.2
- # Version 1.5 is necessary for LWP 5.815 compatibility. Version 1.2 is
+ VERSION WWW::Mechanize $LWP::UserAgent::VERSION >= 5.815 ? 1.52 : 1.2
+ # Version 1.52 is necessary for LWP 5.815 compatibility. Version 1.2 is
  # needed otherwise for its handling of cookie jars during cloning.
 }
-our @ISA = qw( WWW::Mechanize HTML::DOM::View HTML::DOM::EventTarget );
+our @ISA = qw( WWW::Mechanize HTML::DOM::View );
+
+sub DOES {
+ return 1 if $_[1] eq 'HTML::DOM::EventTarget';
+ goto &{$_[0]->can("SUPER::DOES")||return}
+}
 
 our @EXPORT_OK = qw/abort/;
 our %EXPORT_TAGS = (
@@ -31,17 +39,19 @@ our %EXPORT_TAGS = (
 
 # Fields that we don’t want fiddled with when the page stack is
 # manipulated:
-fieldhashes \my( %loc, , %scriptable, %script_handlers,
-                 %class_info, %navi, %top, %parent, %history_index );
+fieldhashes \my( %scriptable, %script_handlers,
+                 %class_info, %navi, %top, %parent );
 # ~~~ Actually, most of these can be eliminated, since we can store them
 #     directly in the object, as we are not doing that cloning that Mech
 #     used to do between pages.
 
 # Fields keyed by document:
-fieldhashes \my( %timeouts, %frames );
+fieldhashes \my( %timeouts, %frames, %evtg );
 
-fieldhash my %document; # keyed by request — we actually use
-                        # HTML::DOM::View’s storage for the current doc
+fieldhash my %document; # keyed by response — we actually use
+                        # HTML::DOM::View’s storage for the current doc,
+                        # but this field hash is necessary when we return
+                        # to a page.
 
 # These are used to create a link between a WWW::Mechanize::(Image|Link)
 # object and the DOM equivalent.
@@ -50,32 +60,59 @@ fieldhash my %dom_obj;
 # ------------- Mech overrides (or does it?) ------------- #
 
 sub new {
-	my $self = shift->SUPER::new(@_);
+	my $class = shift;
+	my %args = @_;
+	exists $args{max_docs}
+	 and $args{stack_depth} = -1+delete$args{max_docs};
+	my $max_history = delete $args{max_history};
 
+	my $self = $class->SUPER::new(%args);
+
+	$$self{Scripter_max_hist} = $max_history;
 	$script_handlers{$self} = {};
 	$scriptable{$self} = 1;
 
 	$self->{page_stack} = WWW'Scripter'History->new( $self );
 
 	weaken(my $self_fc = $self); # for closures
-	$class_info{$self} = [ \%HTML::DOM'Interface, \our%Interface, {
-	 'WWW::Scripter::Image' => "Image",
-	  Image                 => {
-	   _constructor => sub {
-	    my $i = $self_fc->document->createElement('img');
-	    @_ and $i->attr('width',shift);
-	    @_ and $i->attr('height',shift);
-	    $i
-	   }
-	  },
-	} ];
+	$class_info{$self} = [
+	 \(%HTML::DOM'Interface, %CSS'DOM'Interface, our%Interface), {
+	  'WWW::Scripter::Image' => "Image",
+	   Image                 => {
+	    _constructor => sub {
+	     my $i = $self_fc->document->createElement('img');
+	     @_ and $i->attr('width',shift);
+	     @_ and $i->attr('height',shift);
+	     $i
+	    }
+	   },
+	 }
+	];
 
-	my %args = @_;
 	unless(exists $args{agent}) {
 		$self->agent("WWW::Scripter/$VERSION");
 	}
 
+	# I would like to avoid doing this when it is not necessary, but
+	# the alternative would  require  overriding  HTML::DOM::View’s
+	# document method, and that might slow things down more, since
+	# document  is called more often than new  Scripter  objects
+	# are created.
+	_initial_page($self);
+
 	$self;
+}
+
+sub _initial_page {
+	my $req = new HTTP::Request 'GET', 'about:blank';
+	my $res = new HTTP::Response 200, OK => [
+	 'content-length' => 0,
+	 'content-type' => 'text/html',
+	], '';
+	$res->request($req);
+	shift->_update_page(
+	 $req, $res
+	);
 }
 
 sub clone {
@@ -133,17 +170,42 @@ sub request {
 
     $request = $self->_modify_request( $request );
 
+    my $meth = $request->method;
+    my $orig_uri = $request->uri;
+    my $skip_fetch;
+    if(defined($orig_uri->fragment)) {
+     (my $new_uri = $orig_uri->clone)->fragment(undef);
+     $request->uri($new_uri);
+
+     # Skip fetching the URL if it is the same (and there is a fragment).
+     # We don’t need to strip the fragment from $self->uri before compari-
+     # son as that always contains the actual URL  sent  in  the  request.
+     $meth eq "GET" and $new_uri->eq($self->uri) and ++$skip_fetch;
+    }
+
     my $response;
-    Scripter_REQUEST: {
+
+    if($skip_fetch) {
+     $response = $self->response;
+    }
+    else {
+     Scripter_REQUEST: {
         Scripter_ABORT: {
             $response = $self->_make_request( $request, @_ );
             last Scripter_REQUEST;
         }
         return 1
+     }
     }
 
-    if ( $request->method eq 'GET' || $request->method eq 'POST' ) {
-        $self->{page_stack}->_push($request, $response);
+    if ( $meth eq 'GET' || $meth eq 'POST' ) {
+        $self->get_event_listeners('unload') and
+         $self->trigger_event('unload'),
+         $self->{page_stack}->_delete_res;
+
+        $self->{page_stack}->${\(
+         $self->{Scripter_replace} ? '_replace' : '_add'
+        )}($request, $response, $orig_uri);
     }
 
     $self->_update_page($request, $response);
@@ -345,17 +407,13 @@ sub update_html {
 	$tree->write(defined $cs ? decode $cs, $src : $src);
 	$tree->close;
 
-	$tree->body->trigger_event('load');
-	# ~~~ Problem: Ever since JavaScript 1.0000000, the
-	#     (un)load events on the body attribute have associated event
-	#     handlers with the Window object. But the DOM 2 Events spec
-	#     doesn’t provide for events on the window (view) at all; only
-	#     on Nodes. The load event is supposed to be triggered on the
-	#     document. In HTML 5 (10 June 2008 draft), what we are doing
-	#     here is correct. In
-	#     Safari & FF 3, the body element’s attributes create event
-	#     handlers on the window, which are called with the document as
-	#     the event’s target.
+	# This used to trigger the load event on the body  element  (which
+	# conformed to HTML 5 at the time [10 June 2008 draft]),  but which
+	# was not fully  compatible  with  any  existing  browser.  HTML  5
+	# changed to what Firefox and Safari did  (some time before Septem-
+	# ber, 2009),  which is what we now have here.  (It still doesn’t
+	# quite make sense, as the document is not actually the target.)
+	$self->trigger_event('load', target => $tree);
 
 	# banana
 	$self->{form} = ($self->{forms} = $tree->forms)->[0];
@@ -465,7 +523,9 @@ sub prompt {
 
 sub location {
 	my $self = shift;
-	my $loc = $loc{$self} ||= WWW::Scripter::Location->new( $self );
+	my $loc = $self->{Scripter_loc} ||= WWW::Scripter::Location->new(
+	 $self
+	);
 	$loc->href(@_) if @_;
 	$loc;
 }
@@ -567,6 +627,44 @@ sub count_timers {
 	}
 	$count;
 }
+
+# ------------- EventTarget interface ------------- #
+
+{
+ package WWW::Scripter::EventTarget;
+ use Scalar'Util 'weaken';
+ our @ISA = HTML'DOM'EventTarget::;
+ sub new { my $self = bless \(my $dummy = pop);  weaken $$self; $self }
+ sub event_listeners_enabled { ${$_[0]}->scripts_enabled }
+}
+
+sub AUTOLOAD {
+	my($pack,$meth) = our $AUTOLOAD =~ /(.*)::(.*)/s;
+	return if $meth eq 'DESTROY';
+	$meth =~ /^on([a-z]+)\z/
+		or die "Can't locate object method \"$meth\" via package "
+			."$pack at ".join' line ',(caller)[1,2]
+			,. "\n";
+	my $self = shift;
+	(
+	 $evtg{$self->response}
+	  ||= new WWW'Scripter::EventTarget $self
+	)->attr_event_listener($1, @_);
+}
+# ~~~ Is there any fairly reliable and efficient way to get this list auto-
+#     matically? We only want methods, not utility functions like
+#     _dispatch_event.
+for my $meth (qw b addEventListener removeEventListener attr_event_listener
+                   get_event_listeners dispatchEvent trigger_event b) {
+ no strict 'refs';
+ *$meth = sub {
+   my $self = shift;
+   (
+    $evtg{$self->response} ||= new WWW'Scripter'EventTarget:: $self
+   )->$meth(@_)
+  }
+}
+
 
 # ------------- Scripting hooks and what-not ------------- #
 
@@ -672,8 +770,22 @@ sub clear_history {
         # list of keys taken from _update_page
         delete $self->{$_} for qw[ req redirected_url res status base ct
             uri last_uri content ];
+        _initial_page($self);
     }
     return $self;
+}
+
+sub max_docs {
+ my $self= shift;
+ defined wantarray and my $old = $self->stack_depth+1;
+ $self->stack_depth(shift()-1) if @_;
+ $old;
+}
+
+sub max_history {
+ my $old = (my $self = shift)->{Scripter_max_hist};
+ @_ and $self->{Scripter_max_hist} = shift;
+ $old
 }
 
 # ------------- History object ------------- #
@@ -685,7 +797,7 @@ use WWW::Scripter; $VERSION = $WWW'Scripter'VERSION;
 mldistwatch
 our $VERSION = $WWW'Scripter'VERSION;
 
-use Hash::Util::FieldHash::Compat 'fieldhash';
+use Hash::Util::FieldHash::Compat 'fieldhashes';
 use HTML::DOM::Interface qw 'NUM STR READONLY METHOD VOID';
 use Scalar::Util 'weaken';
 
@@ -703,7 +815,8 @@ history entries. Each entry is itself an array ref containing:
 4 - title
 
 The length of the array tells us whether it is a state-info entry. The URL
-is used both for fragments and for state objects.
+is used both for fragments and for state objects. The second element will
+be blank if it has been erased because of max_docs.
 
 The history object has a pointer to the ‘current’ history item
 ($index{$self}).
@@ -713,6 +826,12 @@ Document objects are referenced by response: $document{$response}. The
 history is browsed, retrieving it from %document.
 
 The ‘unbrowsed’ state mentioned in HTML 5 is represented by an empty array.
+
+Response objects are also listed in the array ref stored in $res{$self} in
+the order in which they were accessed. Subroutines that add to this array
+then call  _clean($self),  which then eliminates duplicate entries  and
+deletes from the history object itself as many of the oldest response
+objects as are necessary to satisfy max_docs.
 
 =end comment
 
@@ -730,26 +849,48 @@ $$_{History} = {
 }
 for \%WWW::Scripter::Interface;
 
-fieldhash my %w;
-fieldhash my %index;
+fieldhashes \my ( %w, %index, %res );
 
 sub new {
 	my ($pack,$mech) = @_;
 	my $self = bless [[]], $pack;
 	weaken($w{$self} = $mech);
 	$index{$self} = 0;
+	$res{$self} = [];
 	$self
 }
 
-sub _push {
+sub _add {
  my $self = shift;
  if(defined $$self[-1][0]) { # if there is no ‘undef’ entry
   splice @$self, ++$index{$self};
   push @$self, \@_;
+  push @{$res{$self}}, $_[1]; 
+  _clean($self,1);
  }
  else {
   $$self[-1] = \@_;
+  push @{$res{$self}}, $_[1];
  }
+}
+
+# Called when browsing to a stale history entry and also by
+# location->replace
+sub _replace {
+ my $self = shift;
+ if(defined $$self[-1][0]) { # if browsing has occurred
+  $$self[$index{$self}] = \@_;
+  push @{$res{$self}}, $_[1]; 
+  _clean($self);
+ }
+ else {
+  $$self[-1] = \@_;
+  push @{$res{$self}}, $_[1];
+ }
+}
+
+sub _delete_res {
+ delete $_[0][$index{$_[0]}][1];
 }
 
 sub _clear { # called by Scripter->clear_history
@@ -778,7 +919,17 @@ sub go {
 
   # ~~~ trigger popstate
 
-  $w{$self}->_update_page(@{$$self[$new_pos]});
+  # If there is a response object, we just reset the page from that. If
+  # there isn’t then this is a stale entry and we need to
+  # re-fetch the page.
+  my $entry = $$self[$new_pos];
+  if(defined $$entry[1]) { # response
+   $w{$self}->_update_page(@$entry)
+  }
+  else {
+   local(my $w = $w{$self})->{Scripter_replace} = 1;
+   $w->request($$entry[0]);
+  }
  }
  return;
 }
@@ -801,7 +952,52 @@ sub pushState {
  # replace those future entries with the new item
  splice @$self, $index+1, $to_delete||0, [ $req, $res, $_[2], @_ ];
 
+ _clean($self);
+
  return;
+}
+
+sub _clean {
+ my($self, $check_max_hist) = @_;
+ if($check_max_hist) {
+  my $max = (my $w = $w{$self})->{Scripter_max_hist};
+  if($max && @$self > $max) {
+   my $diff = @$self-$max;
+   $index{$self} -= $diff;
+   splice @$self, 0, $diff;
+  }
+ }
+ my $max = $w{$self}->stack_depth + 1;
+ my $res = $res{$self};
+ my %res;
+ for(@$self) {
+  defined $$_[1] and $res{0+$$_[1]}++
+ }
+ if($max) { # ~~~ It may be more efficient if, instead of searching for
+  my @res;  #     duplicates here, we scan for the ones we know we’ve added
+  my %seen; #     in _add and _replace.
+  for(reverse @$res) {
+   my $refaddr = 0+$_;
+   unshift @res, $_ if exists $res{$refaddr} && !$seen{$refaddr}++;
+  }
+  @$res = @res, return unless @res > $max;
+  my $diff = @res-$max;
+  my %to_delete;
+  @to_delete{map 0+$_, splice @res, 0,$diff}=();
+  @$res = @res;
+  for(@$self) {
+   next unless defined $$_[1];
+   delete $$_[1] if exists $to_delete{0+$$_[1]};
+  }
+ }
+ else {
+  @$res = grep exists $res{refaddr $_}, @$res;
+ }
+}
+
+sub _uri {
+ my $self = shift;
+ $$self[$index{$self}][2] || $w{$self}->uri;
 }
 
 # ~~~
@@ -819,7 +1015,7 @@ use URI;
 use HTML::DOM::Interface qw'STR METHOD VOID';
 use Scalar::Util 'weaken';
 
-use overload fallback => 1, '""' => sub{${+shift}->uri};
+use overload fallback => 1, '""' => sub{${+shift}->history->_uri};
 
 $$_{~~__PACKAGE__} = 'Location',
 $$_{Location} = {
@@ -836,7 +1032,7 @@ $$_{Location} = {
 }
 for \%WWW::Scripter::Interface;
 
-sub new { # usage: new .....::Location $uri, $mech
+sub new { # usage: new .....::Location $mech
 	my $class = shift;
 	weaken (my $mech = shift);
 	my $self = bless \$mech, $class;
@@ -845,94 +1041,92 @@ sub new { # usage: new .....::Location $uri, $mech
 
 sub hash {
 	my $loc = shift;
-	my $old = (my $uri = $$loc->uri)->fragment;
+	my $old = (my $uri = $$loc->history->_uri)->fragment;
 	$old = "#$old" if defined $old;
 	if (@_){
 		shift() =~ /#?(.*)/s;
 		(my $uri_copy = $uri->clone)->fragment($1);
-		$uri_copy->eq($uri) or $$loc->get($uri);
+		$uri_copy->eq($uri) or $$loc->get($uri_copy);
 	}
 	$old||''
 }
 
 sub host {
 	my $loc = shift;
+	my $uri = $$loc->history->_uri;
 	if (@_) {
-		(my $uri = $$loc->uri->clone)->host(shift);
+		(my $uri = $uri->clone)->port("");
+		$uri->host_port(shift);
 		$$loc->get($uri);
 	}
-	else {
-		$$loc->uri->host;
-	}
+	defined wantarray ? $uri->host_port : ()
 }
 
 sub hostname {
 	my $loc = shift;
+	my $uri = $$loc->history->_uri;
 	if (@_) {
-		(my $uri = $$loc->uri->clone)->host_port(shift);
+		(my $uri = $uri->clone)->host(shift);
 		$$loc->get($uri);
 	}
-	else {
-		$$loc->uri->host_port;
-	}
+	defined wantarray ? $uri->host : ()
 }
 
 sub href {
 	my $loc = shift;
+	my $old = $$loc->history->_uri->as_string if defined wantarray;
 	if (@_) {
 		$$loc->get(shift);
 	}
-	else {
-		$$loc->uri->as_string;
-	}
+	$old;
 }
 
 sub pathname {
 	my $loc = shift;
+	my $uri = $$loc->history->_uri;
 	if (@_) {
-		(my $uri = $$loc->uri->clone)->path(shift);
+		(my $uri = $uri->clone)->path(shift);
 		$$loc->get($uri);
 	}
-	else {
-		$$loc->uri->path;
-	}
+	defined wantarray ? $uri->path : ()
 }
 
 sub port {
 	my $loc = shift;
+	my $uri = $$loc->history->_uri;
 	if (@_) {
-		(my $uri = $$loc->uri->clone)->port(shift);
+		(my $uri = $uri->clone)->port(shift);
 		$$loc->get($uri);
 	}
-	else {
-		$$loc->uri->port;
-	}
+	defined wantarray ? $uri->port : ()
 }
 
 sub protocol {
 	my $loc = shift;
+	my $uri = $$loc->history->_uri;
 	if (@_) {
 		shift() =~ /(.*):?/s;
-		(my $uri = $$loc->uri->clone)->scheme($1);
+		(my $uri = $uri->clone)->scheme($1);
 		$$loc->get($uri);
 	}
-	else {
-		$$loc->uri->scheme . ':';
-	}
+	defined wantarray ? $uri->scheme . ':' : ()
 }
 
 sub search {
 	my $loc = shift;
+	my $uri = $$loc->history->_uri;
 	if (@_){
 		shift() =~ /(\??)(.*)/s;
-		(my $uri_copy = (my $uri = $$loc->uri)->clone)->query(
-			$1&&length$2 ? $2 : undef
+		(
+		 my $uri_copy = $uri->clone
+		)->query(
+			$1||length$2 ? "$2" : undef
 		);
-		$uri_copy->eq($uri) or $$loc->get($uri);
-	} else {
-		my $q = $$loc->uri->query;
-		defined $q ? "?$q" : "";
+		$$loc->get($uri_copy);
 	}
+	return unless defined wantarray;
+	my $q = $uri->query;
+	defined $q ? "?$q" : "";
 }
 
 
@@ -942,7 +1136,7 @@ sub reload  { # args (forceGet)
 }
 sub replace { # args (URL)
 	my $mech = ${+shift};
-	$mech->back();
+	local $$mech{Scripter_replace } = 1;
 	$mech->get(shift);
 }
 
@@ -1008,6 +1202,10 @@ sub userAgent {
 
 package WWW'Scripter'_about_protocol;
 
+# ~~~ This method may be a bad idea if someone else wants to implement
+#     other aspects of the about: protocol. Maybe we should use an LWP
+#     handler. (Then we would, of course, require a later LWP.)
+
 <<'mldistwatch' if 0;
 use WWW::Scripter; $VERSION = $WWW'Scripter'VERSION;
 mldistwatch
@@ -1024,7 +1222,7 @@ sub request { # based on the one in LWP::Protocol::file
 
 	if(defined $proxy) {
 		return new HTTP::Response 400,,
-			'The about: protocol does not work wit proxies';
+			'The about: protocol does not work with proxies';
 	}
 
 	my $url=  $request->url;

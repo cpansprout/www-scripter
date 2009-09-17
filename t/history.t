@@ -2,7 +2,7 @@
 
 use warnings;
 use strict;
-use Test::More tests => 14 ;
+use Test::More tests => 25 ;
 use URI;
 
 BEGIN {
@@ -98,3 +98,68 @@ is_deeply \@scratch, [
     ['fourth page', \'phoo'],  # can't go forward beyond the last state
     ['fifth page', undef],
 ], 'pushState';
+
+$mech = new WWW::Scripter max_docs => 3, max_history => 27;
+is $mech->max_docs, 3, 'max_docs constructor arg';
+is $mech->max_history, 27, 'max_history constructor arg';
+$mech->max_docs(4);
+$mech->max_history(32);
+is $mech->max_docs, 4, 'max_docs accessor';
+is $mech->max_history, 32, 'max_history accessor';
+$mech->stack_depth(53);
+is $mech->max_docs, 54, 'max_history based on stack_depth';
+
+$mech->max_docs(2);
+$mech->max_history(4);
+for("one","two","three",'four','five') {
+ $mech->get(data_url "<title>$_</title>");
+ $mech->document->title("$_ modified");
+}
+is $mech->history->length, 4, 'max_history in effect';
+$mech->back;
+is $mech->title, "four modified", 'max_docs does not erase too many docs';
+$mech->back;
+is $mech->title, "three", 'max_docs throws docs away when appropriate';
+$mech->forward for 1..2;
+is $mech->title,"five", 'max_docs throws away future docs when going back';
+$mech->back for 1..4;
+is $mech->title,'two',
+ 'max_history did actually throw away the first entry';
+
+
+# In my first attempt at implementing  max_docs,  it would defenestrate
+# enough docs at the beginning or end of the history to satisfy max_docs--
+# at the beginning for forward navigation, and at the end for backward nav-
+# igation.  This would cause the following problem  (it could get worse if
+# max_docs  were fiddled in the middle of browsing,  in that the  current
+# page’s corresponding  entry  in  the  history  object  would  lack  a
+# response object):
+#
+# set max_docs to 2
+# browse to four docs:
+#   undef undef document document
+#                           ^
+# go(-3)
+#   document undef document undef
+#      ^
+# forward
+#   undef document document undef
+#            ^
+# back
+#   document document undef undef
+#      ^
+# So going back to the page we’ve just been on reloads it since it was
+# erased. That doesn’t make sense. So now we keep a separate list of doc-
+# uments, in the order they were visited, and delete the oldest ones. That
+# is what this test is for. (That’s a long test name!)
+
+$mech->clear_history(1);
+$mech->max_docs(2);
+$mech->get(data_url "<title>$_</title>") for qw "one two three four";
+$mech->history->go(-3);
+$mech->document->title("modified");
+$mech->forward;
+$mech->back;
+#use DDS; Dump $mech->history;
+is $mech->title, "modified",
+ "In my first attempt at.... (see the source for the full name)";

@@ -23,9 +23,11 @@ my $uri = URI::file->new_abs( 't/form_with_fields.html' )->as_string;
 
 {
     my $mech = WWW::Scripter->new( cookie_jar => undef );
+    my $initial_response = $mech->response;
     $mech->set_my_handler(request_prepare => sub { abort });
     $mech->get($uri);
-    is $mech->response, undef, 'abort from within request handler';
+    is $mech->response, $initial_response,
+     'abort from within request handler';
 
     my $called;
     $mech->set_my_handler(request_prepare => sub { ++$called; return });
