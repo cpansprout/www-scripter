@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.005 (alpha)
+WWW::Scripter, version 0.006 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,16 +8,8 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-See the Changes file for the long version.
-
-• max_docs and max_history
-• When no browsing has happened,  the current page is now about:blank.
-• Correct handling of URL fragments
-• Various fixes to the location object
-• Support for onunload handlers
-• onload  events are now called on the window,  not the body  element.
-• class_info  now includes the CSS interfaces,  which  had  been  for-
-  gotten.
+WWW::Scripter now overrides WWW::Mechanize’s submit method to trigger
+onsubmit.  (Thanks to  Steven  Nikkel  for  stumbling  across  this.)
 
 
 INSTALLATION

@@ -25,5 +25,6 @@ t/history.t
 t/location.t
 t/plugin-cloning.t
 t/plugins.t
+t/submit.t
 t/tests.pm
 META.yml                                 Module meta-data (added by MakeMaker)

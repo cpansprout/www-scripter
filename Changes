@@ -1,6 +1,11 @@
 Revision history for WWW::Scripter
 
-0.005  17 September, 2010
+0.006  30 September, 2009
+       WWW::Scripter now overrides  WWW::Mechanize’s submit method to
+       trigger  onsubmit.  (Thanks to  Steven  Nikkel  for  stumbling
+       across this.)
+
+0.005  17 September, 2009
      • max_docs and max_history have been added. Mech’s stack_depth
        is  now  honoured.  (max_docs  is  an  off-by-one  alias  to
        stack_depth.)

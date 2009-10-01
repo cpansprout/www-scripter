@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.005';
+our $VERSION = '0.006';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -477,6 +477,22 @@ sub _extract_images {
 
 sub back {
    shift->{page_stack}->go(-1)
+}
+
+sub submit {
+ if(defined wantarray) {
+  # We have to return the response object if a request was made, so we
+  # override the default event handler for this particular case.
+  my $go_for_it;
+  $_[0]->current_form->trigger_event(
+   'submit',
+    submit_default => sub { ++$go_for_it }
+  );
+  $go_for_it ? $_[0]->SUPER::submit : ()
+ }
+ else {
+  shift->current_form->submit
+ }
 }
 
 # ------------- Window interface ------------- #

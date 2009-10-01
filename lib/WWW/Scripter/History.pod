@@ -5,7 +5,7 @@ WWW::Scripter::History - History object for WWW::Scripter
 
 =head1 VERSION
 
-Version 0.005
+Version 0.006
 
 This module is still far from complete. It is mainly a 
 placeholder.
