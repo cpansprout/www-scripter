@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.006';
+our $VERSION = '0.007';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -120,6 +120,7 @@ sub clone {
 	$$_{$clone}=$$_{$self} for \(
 	 %scriptable,%script_handlers
 	);
+	$class_info{$clone} = [@{$class_info{$self}}];
 	$clone->{handlers} = $self->{handlers};
 	$clone->{page_stack} = WWW'Scripter'History->new($clone);
 	$clone->_clone_plugins;

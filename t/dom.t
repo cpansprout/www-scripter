@@ -645,3 +645,15 @@ use tests 4; # about:blank before browsing
  is $w->response->content, "", "content before browsing";
  ok $w->document,, "document before browsing";
 }
+
+use tests 2; # clone
+{
+ my $w = new WWW::Scripter;
+ my $clone = clone $w;
+ ok eval{
+   ()= # non-void context
+      $clone->class_info
+   ; 1}, 'class_info on a clone no longer dies in non-void context';
+ is_deeply [eval{$clone->class_info}], [$w->class_info],
+  'class_info gets copied over';
+}

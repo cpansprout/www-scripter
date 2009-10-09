@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.006 (alpha)
+0.007 (alpha)
 
 =head1 SYNOPSIS
 
@@ -236,7 +236,7 @@ L</SCRIPT HANDLERS>, below.
 
 =item class_info ( \%interfaces )
 
-With this you can provide information for Perl classes to scripting
+With this you can provide information for binding Perl classes to scripting
 languages, so that scripts can
 handle objects of those classes.
 

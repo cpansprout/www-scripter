@@ -1,5 +1,10 @@
 Revision history for WWW::Scripter
 
+0.007  9 October, 2009
+       The clone  method now handles copies  class_info  over.  class-
+      _info  no longer dies when called on a clone with no  arguments
+       in list or scalar context.
+
 0.006  30 September, 2009
        WWW::Scripter now overrides  WWW::Mechanize’s submit method to
        trigger  onsubmit.  (Thanks to  Steven  Nikkel  for  stumbling

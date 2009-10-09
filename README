@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.006 (alpha)
+WWW::Scripter, version 0.007 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,8 +8,7 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-WWW::Scripter now overrides WWW::Mechanize’s submit method to trigger
-onsubmit.  (Thanks to  Steven  Nikkel  for  stumbling  across  this.)
+The clone method now handles copies class_info over.
 
 
 INSTALLATION
