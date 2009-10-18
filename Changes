@@ -1,5 +1,16 @@
 Revision history for WWW::Scripter
 
+0.008  19 October, 2009
+     • The base method now uses HTML::DOM’s base method,  in order to
+       work with multiple <base> tags and dynamic changes to the base.
+     • We now include scroll, scrollBy and scrollTo methods,  in case
+       a script tries to call them.  They don’t actually do  anything.
+     • Frames with no  src  element or an empty src element  used  to
+       load the parent page,  resulting in infinite  recursion.  This
+       has been fixed.
+     • setTimeout  now works with a code ref as  the  first  argument.
+     • count_timers no longer clobbers the $_ variable.
+
 0.007  9 October, 2009
        The clone  method now handles copies  class_info  over.  class-
       _info  no longer dies when called on a clone with no  arguments

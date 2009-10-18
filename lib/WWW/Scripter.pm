@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.007';
+our $VERSION = '0.008';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -17,7 +17,7 @@ use HTML::DOM::View .018;
 use HTTP::Headers::Util 'split_header_words';
 use HTTP::Response;
 use HTTP::Request;
-use Scalar::Util qw 'blessed weaken';
+use Scalar::Util 1.09 qw 'blessed weaken reftype';
 use LWP::UserAgent;
 BEGIN {
  require WWW::Mechanize;
@@ -391,7 +391,7 @@ sub update_html {
 		my $subwin = $self->clone->clear_history(1);
 		$elem->contentWindow($subwin);
 		$subwin->_set_parent(my $parent = $doc->defaultView);
-		defined(my $src = $elem->src) or return;
+		length(my $src = $elem->src) or return;
 		$subwin->get(new_abs URI $src, $parent->base);
 	});
 	$tree->elem_handler(frame => $frame_handler);
@@ -496,6 +496,12 @@ sub submit {
  }
 }
 
+sub base {
+ my $self = shift;
+ my $base = ($self->document || return SUPER'base $self @_)->base;
+ length $base ? $base : undef;
+}
+
 # ------------- Window interface ------------- #
 
 # This does not follow the same format as %HTML::DOM::Interface; this cor-
@@ -519,6 +525,9 @@ our %WindowInterface = (
 	frames => OBJ|READONLY,
 	length => NUM|READONLY,
 	parent => OBJ|READONLY,
+	scroll => VOID|METHOD,
+	scrollBy => VOID|METHOD,
+	scrollTo => VOID|METHOD,
 );
 
 sub alert {
@@ -556,11 +565,11 @@ sub navigator {
 sub setTimeout {
 	my $doc = shift->document;
 	my $time = time;
-	my ($code, $ms) = @_;
+	my ($code, $ms) = (shift,shift);
 	$ms /= 1000;
 	my $t_o = $timeouts{$doc}||=[];
 	$$t_o[my $id = @$t_o] =
-		[$ms+$time, $code];
+		[$ms+$time, $code, @_];
 	return $id;
 }
 
@@ -610,6 +619,8 @@ sub parent {
 
 sub _set_parent { weaken( $parent{$_[0]} = $_[1] ) }
 
+sub scroll{};  *scrollBy=*scrollTo=*scroll;
+
 # ------------- Window-Related Public Methods -------------- #
 
 sub set_alert_function   { ${$_[0]}{Scripter_alert}     = $_[1]; }
@@ -623,8 +634,15 @@ sub check_timers {
 	my $t_o = $timeouts{$self->document}||return;
 	for my $id(0..$#$t_o) {
 		next unless $_ = $$t_o[$id];
+		no warnings 'uninitialized';
 		$$_[0] <= $time and
-			($self->_handler_for_lang('JavaScript')||return)
+			reftype $$_[1] eq 'CODE' || (
+			 exists $INC{'overload.pm'}
+			 && defined blessed $$_[1]
+			 && overload'Method($$_[1],'&{}')
+			)
+			 ? $$_[1]->(@$_[2..$#$_])
+			 : ($self->_handler_for_lang('JavaScript')||return)
 				->eval($self,$$_[1]),
 #			$@ && $self->warn($@),
 # ~~~ need to fix an HTML::DOM bug before we can warn here
@@ -639,7 +657,7 @@ sub count_timers {
 	my $t_o = $timeouts{$self->document}||return 0;
 	my $count;
 	for my $id(0..$#$t_o) {
-		next unless $_ = $$t_o[$id];
+		next unless $$t_o[$id];
 		++$count
 	}
 	$count;

@@ -6,6 +6,7 @@ lib/WWW/Scripter.pod
 Makefile.PL
 MANIFEST
 README
+t/base.t
 t/blank.html
 t/class-info.t
 t/clear_history.t
@@ -25,6 +26,7 @@ t/history.t
 t/location.t
 t/plugin-cloning.t
 t/plugins.t
+t/scroll.t
 t/submit.t
 t/tests.pm
 META.yml                                 Module meta-data (added by MakeMaker)

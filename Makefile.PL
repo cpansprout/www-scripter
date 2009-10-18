@@ -24,9 +24,10 @@ WriteMakefile(
 	HTTP'Response              => 1.35, # likewise
 	LWP                        => 5,
 	LWP::Protocol              => 0, # version 1.22 at the earliest
-	overload                   => 0,  # (LWP 5), for the collect
-	Scalar::Util               => 0,   # method, but that version
-	strict                     => 0,    # didn’t include $VERSION
+	                                     # (LWP 5), for the collect
+	overload                   => 0,          # method, but that ver-
+	Scalar::Util               => 1.09, # reftype  # sion  didn’t  in-
+	strict                     => 0,                   # clude $VERSION
 	URI                        => 0,
 	warnings                   => 0,
 	WWW::Mechanize             => (

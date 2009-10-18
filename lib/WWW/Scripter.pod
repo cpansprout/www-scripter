@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.007 (alpha)
+0.008 (alpha)
 
 =head1 SYNOPSIS
 
@@ -107,11 +107,16 @@ C<userAgent> (same as C<< $w->agent >>).
 
 You can pass values to C<appName> and C<appVersion> to set them.
 
-=item setTimeout ( $code, $ms );
+=item setTimeout ( $code_string, $ms );
 
-This schedules the C<$code> to run after C<$ms> seconds have elapsed, 
+=item setTimeout ( $coderef, $ms, @args );
+
+This schedules the code to run after C<$ms> seconds have elapsed, 
 returning a
-number uniquely identifying the time-out. 
+number uniquely identifying the time-out. If the first argument is a
+coderef or an object with C<&{}> overloading, it will be called as such.
+Otherwise, it is parsed as a string of JavaScript code. (If the JavaScript
+plugin is not loaded, it will be ignored.)
 
 =item clearTimeout ( $timeout_id )
 
@@ -158,6 +163,14 @@ frames.
 
 Returns the parent frame, if there is one, or the window object itself
 otherwise.
+
+=item scroll
+
+=item scrollTo
+
+=item scrollBy
+
+These exist in case scripts try to call them. They don't do anything.
 
 =back
 
