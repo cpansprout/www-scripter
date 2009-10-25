@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.008 (alpha)
+0.009 (alpha)
 
 =head1 SYNOPSIS
 
@@ -293,6 +293,22 @@ These two return what was passed to the constructor, optionally setting it.
 
 =back
 
+=head1 EVENTS
+
+=for comment
+This should probably go inside an FAQ instead of here. We can put the
+documentation about timers there, too.
+
+To trigger events (and event handlers), use the C<trigger_event> method of
+the object on which you want to trigger it. For instance:
+
+ $w->trigger_event('resize');  # runs onresize handlers
+ $w->document->links->[0]->trigger_event('mouseover');
+ $w->current_form->trigger_event('submit');  # same as $w->submit
+
+C<trigger_event> accepts more arguments. See L<HTML::DOM> and
+L<HTML::DOM::EventTarget> for details.
+
 =head1 CAVEATS
 
 WWW::Scripter does not implement any event loop, so you have to call
@@ -333,7 +349,8 @@ A script handler object must provide the following methods:
 
 (where C<$w> is the WWW::Scripter object)
 
-This is supposed to run the C<$code> passed to it.
+This is supposed to run the C<$code> passed to it. It must set C<$@> to a
+true value if there is an error.
 
 =item event2sub ( $w, $elem, $event_name, $code, $url, $line )
 
@@ -444,7 +461,7 @@ L<perl> 5.8.3 or higher (5.8.4 or higher recommended)
 
 L<Hash::Util::FieldHash::Compat>
 
-L<HTML::DOM> 0.030 or higher
+L<HTML::DOM> 0.034 or higher
 
 L<LWP>
 

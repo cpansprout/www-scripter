@@ -7,6 +7,7 @@ no warnings qw 'utf8 parenthesis regexp once qw bareword';
 use Scalar::Util 1.09 'refaddr';
 use Test::More;
 use URI;
+use URI'file;
 use WWW::Scripter;
 
 sub data_url {
@@ -45,7 +46,7 @@ $w->location->reload;
 cmp_ok $w->response, '!=', $response,
  'different response object after calling location->reload';
 
-use tests 6; # replace
+use tests 7; # replace
 {
  my $w = new WWW'Scripter;
  $w->location->replace("data:text/html,");
@@ -66,6 +67,10 @@ use tests 6; # replace
  $w->location->replace("data:text/html,4");
  is $w->history->index, 0,
   'location->replace does not move forward if called from the first page';
+ $w->get(my $uri = new_abs URI'file 't/blank.html');
+ $w->location->replace('fragments.html');
+ $uri =~ s/blank/fragments/;
+ is $w->location, $uri, 'location->replace with relative URLs';
 }
 
 use tests 23; # generic accessor tests

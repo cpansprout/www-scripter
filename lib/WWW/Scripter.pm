@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.008';
+our $VERSION = '0.009';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -11,13 +11,14 @@ use Encode qw'encode decode';
 use Exporter 5.57 'import';
 use Hash::Util::FieldHash::Compat qw 'fieldhash fieldhashes';
 use HTML::DOM 0.021;
-use HTML::DOM::EventTarget 0.03;
+use HTML::DOM::EventTarget 0.034; # get_event_listeners that behaves itself
 use HTML::DOM::Interface 0.019 ':all';
-use HTML::DOM::View .018;
+use HTML::DOM::View 0.018;
 use HTTP::Headers::Util 'split_header_words';
 use HTTP::Response;
 use HTTP::Request;
 use Scalar::Util 1.09 qw 'blessed weaken reftype';
+use List'Util 'sum';
 use LWP::UserAgent;
 BEGIN {
  require WWW::Mechanize;
@@ -25,11 +26,11 @@ BEGIN {
  # Version 1.52 is necessary for LWP 5.815 compatibility. Version 1.2 is
  # needed otherwise for its handling of cookie jars during cloning.
 }
-our @ISA = qw( WWW::Mechanize HTML::DOM::View );
+our @ISA = qw( WWW::Mechanize HTML::DOM::View HTML::DOM::EventTarget );
 
+eval <<'' unless exists &UNIVERSAL'DOES;
 sub DOES {
- return 1 if $_[1] eq 'HTML::DOM::EventTarget';
- goto &{$_[0]->can("SUPER::DOES")||return}
+ goto &{$_[0]->can("SUPER::DOES")||$_[0]->can("isa")}
 }
 
 our @EXPORT_OK = qw/abort/;
@@ -123,6 +124,7 @@ sub clone {
 	$class_info{$clone} = [@{$class_info{$self}}];
 	$clone->{handlers} = $self->{handlers};
 	$clone->{page_stack} = WWW'Scripter'History->new($clone);
+	delete $clone->{Scripter_loc};
 	$clone->_clone_plugins;
 	$clone;
 }
@@ -335,13 +337,19 @@ sub update_html {
 			        $line = 1;
 			    }
 			    else {
-			        $code = $elem->firstChild->data;
+			        $code = ($elem->firstChild||return)->data;
 			        ++$inline;
 			        $uri = $self->uri;
-			        $line = _line_no(
+			        if(defined(
+			         my $offset = $elem->content_offset
+			        )) {
+			         $line = _line_no(
 					$src,$elem->content_offset
-			        );
+			         );
+			        }
+			        else { $uri .= " (generated HTML)" }
 			    };
+			    length $code or return; # optimisation
 	
 			    my $h = $self->_handler_for_lang($lang);
 			    $h && $h->eval($self, $code,
@@ -441,6 +449,7 @@ sub _handler_for_lang {
 # Not an override, but used by update_html
 sub _line_no {
 	my ($src,$offset) = @_;
+defined $offset or Carp::cluck;
 	return 1 + (() =
 		substr($src,0,$offset)
 		    =~ /\cm\cj?|[\cj\x{2028}\x{2029}]/g
@@ -499,6 +508,9 @@ sub submit {
 sub base {
  my $self = shift;
  my $base = ($self->document || return SUPER'base $self @_)->base;
+ if($base eq 'about:blank' and (my $parent = $self->parent) != $self) {
+  return $parent->base;
+ }
  length $base ? $base : undef;
 }
 
@@ -635,68 +647,55 @@ sub check_timers {
 	for my $id(0..$#$t_o) {
 		next unless $_ = $$t_o[$id];
 		no warnings 'uninitialized';
+		local *@;
 		$$_[0] <= $time and
 			reftype $$_[1] eq 'CODE' || (
 			 exists $INC{'overload.pm'}
 			 && defined blessed $$_[1]
 			 && overload'Method($$_[1],'&{}')
 			)
-			 ? $$_[1]->(@$_[2..$#$_])
+			 ? eval { $$_[1]->(@$_[2..$#$_]) }
 			 : ($self->_handler_for_lang('JavaScript')||return)
 				->eval($self,$$_[1]),
-#			$@ && $self->warn($@),
-# ~~~ need to fix an HTML::DOM bug before we can warn here
-#     should we be warning at all?
+			$@ && $self->warn($@),
 			delete $$t_o[$id];
 	}
+	$_->check_timers for $self->frames;
+	# ~~~ Should we try to trigger the timers in the right order if,
+	#     exempli gratia, an iframe’s timer was registered with 200 as
+	#     the timeout,  and then the main window with 210 immediately
+	#     thereafter?
 	return
 }
 
 sub count_timers {
  	my $self =  shift;
-	my $t_o = $timeouts{$self->document}||return 0;
 	my $count;
-	for my $id(0..$#$t_o) {
-		next unless $$t_o[$id];
-		++$count
+	if(my $t_o = $timeouts{$self->document}) {
+#use DDS; Dump [map $_&&[map "$_", @$_], @$t_o];
+		for my $id(0..$#$t_o) {
+			next unless $$t_o[$id];
+			++$count
+		}
 	}
-	$count;
+	sum $count||(), map $_->count_timers, $self->frames or 0;
 }
 
 # ------------- EventTarget interface ------------- #
 
-{
- package WWW::Scripter::EventTarget;
- use Scalar'Util 'weaken';
- our @ISA = HTML'DOM'EventTarget::;
- sub new { my $self = bless \(my $dummy = pop);  weaken $$self; $self }
- sub event_listeners_enabled { ${$_[0]}->scripts_enabled }
-}
+*event_listeners_enabled = *scripts_enabled; 
 
-sub AUTOLOAD {
-	my($pack,$meth) = our $AUTOLOAD =~ /(.*)::(.*)/s;
-	return if $meth eq 'DESTROY';
-	$meth =~ /^on([a-z]+)\z/
-		or die "Can't locate object method \"$meth\" via package "
-			."$pack at ".join' line ',(caller)[1,2]
-			,. "\n";
-	my $self = shift;
-	(
-	 $evtg{$self->response}
-	  ||= new WWW'Scripter::EventTarget $self
-	)->attr_event_listener($1, @_);
-}
-# ~~~ Is there any fairly reliable and efficient way to get this list auto-
-#     matically? We only want methods, not utility functions like
-#     _dispatch_event.
-for my $meth (qw b addEventListener removeEventListener attr_event_listener
-                   get_event_listeners dispatchEvent trigger_event b) {
+# What we are doing here is delegating event handler/listener storage to
+# a response object  (and  fooling  EventTarget  into  thinking  that  the
+# response object is an EventTarget). This is so that each page has its own
+# set of event handlers,  but we still use the WWW::Scripter  object as the
+# event target.
+for my $meth (qw b addEventListener removeEventListener event_handler
+                   get_event_listeners b) {
  no strict 'refs';
+ my $full_meth= "HTML::DOM::EventTarget::$meth";
  *$meth = sub {
-   my $self = shift;
-   (
-    $evtg{$self->response} ||= new WWW'Scripter'EventTarget:: $self
-   )->$meth(@_)
+   shift->response->$full_meth(@_);
   }
 }
 

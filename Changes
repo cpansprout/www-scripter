@@ -1,5 +1,26 @@
 Revision history for WWW::Scripter
 
+0.009  25 October, 2009
+     • count_timers and check_timers now know about timers in
+       (i)frames.
+     • Adding an inline script to  the  DOM  dynamically  (e.g.,  via
+       appendChild) no longer produces a warning.
+     • Empty script elements with no src attribute  no  longer  cause
+       errors.
+     • The base URL for an about:blank page in a frame is  now  taken
+       from the parent window.
+     • check_timers  now catches script errors and  turns  them  into
+       warnings. It used to die with code refs (introduced in the pre-
+       vious version) and silence them with strings of code.
+     • Location objects are no longer shared between frames  (causing
+       navigation in a frame via the location object to navigate  the
+       top window instead).
+     • Event handlers with  call_with  methods no longer get passed a
+       strange WWW::Scripter::EventTarget object.  (These objects had
+       existed since version 0.005 and  were  *supposed*  to  be  for
+       internal use,  but leaked out.  They were for keeping a  diffe-
+       rent set of window event handlers for each page.)
+
 0.008  19 October, 2009
      • The base method now uses HTML::DOM’s base method,  in order to
        work with multiple <base> tags and dynamic changes to the base.

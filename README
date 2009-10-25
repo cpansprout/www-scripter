@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.008 (alpha)
+WWW::Scripter, version 0.009 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,14 +8,18 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-• The base method now uses HTML::DOM’s base method,  in order to work
-  with multiple <base> tags and dynamic changes to the base.
-• We now include scroll,  scrollBy and  scrollTo  methods,  in case a
-  script  tries  to  call  them.  They  don’t  actually  do  anything.
-• Frames with no src element or an empty src element used to load the
-  parent page,  resulting in infinite recursion.  This has been fixed.
-• setTimeout  now works  with  a  code  ref  as  the  first  argument.
-• count_timers no longer clobbers the $_ variable.
+See the Changes file for the long version.
+
+• count_timers and  check_timers  now know about timers in  (i)frames.
+• The base URL for an  about:blank  page in a frame is now taken from
+  the parent window.
+• Adding an inline script to the DOM dynamically  (e.g.,  via  append-
+  Child) no longer produces a warning.
+• Empty script elements with no src attribute no longer cause  errors.
+• check_timers now catches script errors and turns them into warnings. 
+• Location objects are no longer shared between frames.
+• Event handlers with  call_with  methods  no  longer  get  passed  a
+  strange internal-only object.
 
 
 INSTALLATION

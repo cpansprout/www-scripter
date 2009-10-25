@@ -14,9 +14,10 @@ WriteMakefile(
 	Hash'Util'FieldHash'Compat => 0,
 	HTML::DOM                  =>  .03, # body->onion delegates to win
 	HTML'DOM'Collection        => 0,
-	HTML'DOM'EventTarget       =>  .03, # attr_event_listener (only for
-	HTML::DOM::Interface       =>  .019, # EventTarget  # delegation)
-	HTML::DOM::NodeList::Magic =>  .020, # 2nd arg to new
+	HTML'DOM'EventTarget       =>  .034, # get_event_listeners that
+	                                            # does not close over
+	HTML::DOM::Interface       =>  .019, # EventTarget  # the target
+	HTML::DOM::NodeList::Magic =>  .020, # 2nd arg to new            
 	HTML'DOM'View              =>  .018, # inside-out; writa-
 	HTTP::Headers::Util        => 0,     # ble document
 	HTTP::Message              => 1.34, # array ref headers
@@ -34,9 +35,9 @@ WriteMakefile(
 	 eval {
 	  require LWP::UserAgent and
 	      LWP'UserAgent->VERSION < 5.815 && LWP'UserAgent->VERSION >= 5
-	  or require HTTP::Message and HTTP'Message->VERSION >= 1.34
-	  or require HTTP::Request and HTTP'Request->VERSION >= 1.29
-	  or require HTTP'Response and HTTP'Response->VERSION >= 1.35
+	  and require HTTP::Message and HTTP'Message->VERSION >= 1.34
+	  and require HTTP::Request and HTTP'Request->VERSION >= 1.29
+	  and require HTTP'Response and HTTP'Response->VERSION >= 1.35
 	 }
 	  ? 1.2 # cookie cloning
 	  : 1.52 # compatibility with LWP 5.815 with regard to credentials
