@@ -1,5 +1,15 @@
 Revision history for WWW::Scripter
 
+0.010  15 November, 2009
+     • New dom_enabled method that allows HTML parsing to be switched
+       off.
+     • Scripts served with a content type of text/html  are no longer
+       parsed into inaccessible DOM trees. This used to cause warning
+       messages if a JS file  when  read  as  HTML  appeared  to  con-
+       tain scripts.
+     • The document method now returns  undef  if the page is not HTML,
+       instead of returning the previous page’s document.
+
 0.009  25 October, 2009
      • count_timers and check_timers now know about timers in
        (i)frames.

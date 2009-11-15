@@ -166,6 +166,16 @@ END
 	  'window event handlers are not called when scripts are off';
 }
 
+use tests 2; # dom_enabled
+{
+	my $m = new WWW::Scripter;
+	ok $m->dom_enabled(0), 'DOM enabled by default';
+
+	$m->get('data:text/html,');
+	ok !$m->document, 'dom_enabled'
+	 or diag $m->document->URL;
+}
+
 use tests 2; # Scripter->links
 {
 	my $m = new WWW::Scripter ;
@@ -499,4 +509,18 @@ use tests 2; # clone
    ; 1}, 'class_info on a clone no longer dies in non-void context';
  is_deeply [eval{$clone->class_info}], [$w->class_info],
   'class_info gets copied over';
+}
+
+use tests 1; # no doc object for non-HTML
+{
+ my $w = new WWW::Scripter;
+ (my $url = <<"") =~ s/\s+//;   # URL stolen from URI::data
+           data:image/gif;base64,R0lGODdhIAAgAIAAAAAAAPj8+CwAAAAAI
+           AAgAAAClYyPqcu9AJyCjtIKc5w5xP14xgeO2tlY3nWcajmZZdeJcG
+           Kxrmimms1KMTa1Wg8UROx4MNUq1HrycMjHT9b6xKxaFLM6VRKzI+p
+           KS9XtXpcbdun6uWVxJXA8pNPkdkkxhxc21LZHFOgD2KMoQXa2KMWI
+           JtnE2KizVUkYJVZZ1nczBxXlFopZBtoJ2diXGdNUymmJdFMAADs=
+
+ get $w $url;
+ ok !$w->document, 'no doc object for non-HTML';
 }

@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.009';
+our $VERSION = '0.010';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -248,11 +248,15 @@ sub _update_page {
 
     $content .= WWW::Mechanize::_taintedness();
 
-    if ($self->is_html) {
+    if (
+     !defined $$self{Scripter_dumb} || $$self{Scripter_dumb}
+     and $self->is_html
+    ) {
         $self->update_html($content);
     }
     else {
         $self->{content} = $content;
+        $self->document(undef);
     }
 
     return $res;
@@ -309,7 +313,9 @@ sub update_html {
 			    my $uri;
 			    my($inline, $code, $line) = 0;
 			    if($uri = $elem->attr('src')) {
-			        my $clone = $self->clone->clear_history(1);
+			        (
+			         my $clone = $self->clone->clear_history(1)
+			        )->dom_enabled(0);
 			        require URI;
 			        my $base = $self->base;
    			        $uri = URI->new_abs( $uri, $base )
@@ -755,6 +761,15 @@ sub _clone_plugins {
         next unless $po && defined blessed $po && $po->can('clone');
         $plugins->{$pn} = $po->clone($self);
     }
+}
+
+sub dom_enabled {
+	my $old = (my $self = shift)->{Scripter_dumb};
+	defined $old or $old = 1; # default
+	if(@_) {{
+	  $$self{Scripter_dumb} = !!$_[0]; # We don’t want undef
+	}}                                 # resetting it.
+	$old
 }
 
 sub scripts_enabled {

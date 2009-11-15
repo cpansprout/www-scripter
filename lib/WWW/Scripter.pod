@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.009 (alpha)
+0.010 (alpha)
 
 =head1 SYNOPSIS
 
@@ -77,9 +77,7 @@ infinity.
 =head2 The Window Interface
 
 In addition to the methods listed here, see also L<HTML::DOM::View> and
-L<HTML::DOM::EventTarget>. (WWW::Scripter does not itself inherit from
-EventTarget, but provides the same interface, and also a C<DOES>
-method that returns true for 'HTML::DOM::EventTarget'.)
+L<HTML::DOM::EventTarget>.
 
 =over
 
@@ -226,6 +224,15 @@ this as a way to communicate directly with the plugin.
 
 You can also use the return value as a boolean, to see whether a plugin is
 loaded.
+
+=item dom_enabled ( $new_val )
+
+This returns a boolean indicating whether HTML pages are parsed and turned
+into a DOM tree.  It is true
+by default. You can disable HTML parsing by passing a false value. Of
+course, if you are using WWW::Scripter to begin with, you won't want to
+turn this off will you? Nevertheless, this is useful for fetching files
+behind the scenes when just the file contents are needed.
 
 =item scripts_enabled ( $new_val )
 

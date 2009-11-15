@@ -128,3 +128,18 @@ use tests 1; # empty script element
   # the combination of a script without an src attribute and no content
   # caused this to die prior to version 0.009
 }
+
+use tests 1; # scripts served as text/html (fixed in 0.010)
+{
+ my $called;
+ (my $w = new WWW::Scripter)->script_handler(
+  default => new ScriptHandler
+   sub {}, # script handler
+   sub { ++$called } # event2sub -- this should never be called
+ );
+ $w->get(
+  'data:text/html,'
+   . '<script src="data:text/html,/*<a onclick=crile>*/"></script>'
+ );
+ ok !$called, 'scripts served as text/html are not dommified';
+}

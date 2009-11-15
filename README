@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.009 (alpha)
+WWW::Scripter, version 0.010 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,19 +8,12 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-See the Changes file for the long version.
-
-• count_timers and  check_timers  now know about timers in  (i)frames.
-• The base URL for an  about:blank  page in a frame is now taken from
-  the parent window.
-• Adding an inline script to the DOM dynamically  (e.g.,  via  append-
-  Child) no longer produces a warning.
-• Empty script elements with no src attribute no longer cause  errors.
-• check_timers now catches script errors and turns them into warnings. 
-• Location objects are no longer shared between frames.
-• Event handlers with  call_with  methods  no  longer  get  passed  a
-  strange internal-only object.
-
+• New dom_enabled  method that allows HTML parsing to be switched off.
+• Scripts served with a content  type  of  text/html  are  no  longer
+  parsed into inaccessible DOM trees.  This used to cause warning mes-
+  sages if a JS file when read as HTML appeared  to  contain  scripts.
+• The  document  method now returns  undef  if the page is  not  HTML,
+  instead of returning the previous page’s document.
 
 INSTALLATION
 
