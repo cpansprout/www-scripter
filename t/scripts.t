@@ -143,3 +143,15 @@ use tests 1; # scripts served as text/html (fixed in 0.010)
  );
  ok !$called, 'scripts served as text/html are not dommified';
 }
+
+use tests 1; # Can scripts see forms with the Mech interface?
+{
+ my $form;
+ (my $m = new WWW::Scripter)
+  ->script_handler(default => new ScriptHandler sub {
+    $form = ($_[0]->forms)[0]
+   }, sub {});
+ $m->get(data_url '<form><script>grat</script>');
+ is $form, $m->document->forms->[0],
+  'Scripts can see forms with the mech interface.';
+}

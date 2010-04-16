@@ -1,5 +1,30 @@
 Revision history for WWW::Scripter
 
+0.011  18 April, 2010
+     • Support for multiple ‘windows’:
+       • New WWW::Scripter::WindowGroup class
+       • New window_group, blur, close and focus methods
+       • The open method now opens new windows,  returning the window
+         it opened.
+     • Support for link targets and <base target> tags, including the
+       new find_target and name methods
+     • navigator->appCodeName
+     • follow_link and click now return the response object,  instead
+       of returning nothing. (Thanks to  Hannes  Beinert  for  report-
+       ing this.)
+     • follow_link  no longer dies when autocheck is on  (unless it’s
+       supposed to).
+     • The WWW::Mechanize::Link and ::Image  objects returned by vari-
+       ous methods now update automatically if  the  underlying  HTML
+       element changes.
+     • The history object’s  go  method now  reloads  the  page  with
+       zeroes that are boolean-true (like the strings "00" and "0e0"),
+       instead of just with false zeroes.
+     • The title method now sets the page title if passed an argument.
+     • Script handlers can now use the Mech interface to access forms
+       during parsing.
+     • Fetching a page no longer interferes with a tied $_.
+
 0.010  15 November, 2009
      • New dom_enabled method that allows HTML parsing to be switched
        off.
@@ -7,7 +32,7 @@ Revision history for WWW::Scripter
        parsed into inaccessible DOM trees. This used to cause warning
        messages if a JS file  when  read  as  HTML  appeared  to  con-
        tain scripts.
-     • The document method now returns  undef  if the page is not HTML,
+     • The document method now returns undef  if the page is not HTML,
        instead of returning the previous page’s document.
 
 0.009  25 October, 2009
@@ -43,8 +68,8 @@ Revision history for WWW::Scripter
      • count_timers no longer clobbers the $_ variable.
 
 0.007  9 October, 2009
-       The clone  method now handles copies  class_info  over.  class-
-      _info  no longer dies when called on a clone with no  arguments
+       The  clone  method  now  copies  class_info  over.  class_info
+       no longer dies when  called  on  a  clone  with  no  arguments
        in list or scalar context.
 
 0.006  30 September, 2009

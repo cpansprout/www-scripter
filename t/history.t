@@ -2,7 +2,7 @@
 
 use warnings;
 use strict;
-use Test::More tests => 25 ;
+use Test::More tests => 28 ;
 use URI;
 
 BEGIN {
@@ -163,3 +163,13 @@ $mech->back;
 #use DDS; Dump $mech->history;
 is $mech->title, "modified",
  "In my first attempt at.... (see the source for the full name)";
+
+# Test go with other arguments.
+$mech->history->go(2);
+is $mech->title, 'three', 'go with a positive argument';
+$mech->document->title('modified');
+$mech->history->go(0);
+is $mech->title, 'three', 'go(0) reloads';
+$mech->document->title('modified');
+$mech->history->go('00');
+is $mech->title, 'three', 'go("00") (true zero) reloads';

@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.010 (alpha)
+0.011 (alpha)
 
 =head1 SYNOPSIS
 
@@ -28,6 +28,29 @@ support for scripting.
 
 No actual scripting engines are provided I<with> WWW::Scripter, but are
 available as separate plugins. (See also the L</SEE ALSO> section below.)
+
+=head1 SINGLE VS MULTIPLE WINDOWS
+
+There are two basic modes in which you can use WWW::Scripter:
+
+If you only
+need a single virtual window (which is usually the case), use WWW::Scripter
+itself, as described below and in L<WWW::Mechanize>.
+
+For multiple windows,
+start with a window group (see
+L<WWW::Scripter::WindowGroup>) and fetch the WWW::Scripter object via its
+C<active_window> method before proceeding.
+
+At any time you can attach an
+existing window (WWW::Scripter object) to a window group using the latter's
+C<attach> method. You can also C<< ->close >> a window to detach it from
+its window group and put it back in single-window mode.
+
+These two modes affect the behaviour of a few methods (C<open>, C<close>,
+C<blur>, C<focus>) and hyperlinks and forms
+with
+explicit targets.
 
 =head1 INTERFACE
 
@@ -98,9 +121,10 @@ below under L</Window-Related Methods>.
 
 =item navigator
 
-Returns the navigator object. This currently has three properties, 
+Returns the navigator object. This currently has four properties, 
 C<appName>
-(set to C<ref $w>) C<appVersion> (C<< ref($w)->VERSION >>) and 
+(set to C<ref $w>), C<appCodeName> (the same), C<appVersion> 
+(C<< ref($w)->VERSION >>) and 
 C<userAgent> (same as C<< $w->agent >>).
 
 You can pass values to C<appName> and C<appVersion> to set them.
@@ -125,6 +149,23 @@ The cancels the time-out corresponding to the C<$timeout_id>.
 This is a temporary placeholder. Right now it ignores all its args
 except the first, and goes to the given URL, such that C<< ->open(foo) >>
 is equivalent to C<< ->location('foo') >>.
+
+=item close
+
+In multiple-window mode, this detaches this window from its window group.
+In single-window mode (when there is no window group) it goes back to the
+previous entry in history (so that it is the opposite of C<open>).
+
+=item focus
+
+In multiple-window mode, this brings this window to the front. In
+single-window mode (when there is no window group) it does nothing.
+
+=item blur
+
+In multiple-window mode, this sends this window back one, if it is the
+frontmost window. In
+single-window mode (when there is no window group) it does nothing.
 
 =item history
 
@@ -162,6 +203,13 @@ frames.
 Returns the parent frame, if there is one, or the window object itself
 otherwise.
 
+=item name
+
+This returns the window's named, if applicable. For a frame, this comes
+from the frame element to which the window belongs. For a top-level window
+created by C<open>, this is the name that was passed as the second
+argument.
+
 =item scroll
 
 =item scrollTo
@@ -198,6 +246,31 @@ if the appropriate interval has elapsed.
 =item count_timers
 
 This returns the number of timers currently registered.
+
+=item window_group
+
+This returns the window group that owns this window. See
+L</SINGLE VS MULTIPLE WINDOWS>, above.
+
+You can also pass an argument to set it, but you should only do so if you
+know what you are doing, as it does not update the window group's list.
+Consider using L<WWW::Scripter::WindowGroup>'s 
+C<attach> method (which itself uses this method).
+
+=item find_target ( $name )
+
+This finds the WWW::Scripter object (window or frame) in which a link will
+be opened. 
+
+If C<$name> is not an empty string, it returns the window corresponding to
+C<$name>.
+
+If C<$name> is the empty string or undefined, it returns the default target
+for this window,
+based on the first C<< <base target> >> element.
+
+If a named window cannot be found: in multiple-window mode, a new window is
+opened and returned; in single-window mode, C<undef> is returned.
 
 =back
 
@@ -470,7 +543,7 @@ L<Hash::Util::FieldHash::Compat>
 
 L<HTML::DOM> 0.034 or higher
 
-L<LWP>
+L<LWP> 5.77 or higher
 
 L<URI>
 
@@ -478,7 +551,7 @@ L<WWW::Mechanize> 1.2 or higher
 
 =head1 AUTHOR & COPYRIGHT
 
-Copyright (C) 2009, Father Chrysostomos (sprout at, um, cpan dot org)
+Copyright (C) 2009-10, Father Chrysostomos (sprout at, um, cpan dot org)
 
 This program is free software; you may redistribute or modify it (or both)
 under the same terms as perl.

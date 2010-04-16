@@ -4,11 +4,29 @@ use lib 't';
 use warnings;
 no warnings qw 'utf8 parenthesis regexp once qw bareword';
 
+use HTTP::Response;
 use Scalar::Util 1.09 'refaddr';
 use Test::More;
 use URI;
 use URI'file;
 use WWW::Scripter;
+
+# Avoid network activity when playing with the location object:
+use LWP'Protocol;
+{
+ package __;
+ @ISA = LWP'Protocol;
+ LWP'Protocol'implementor $'_ => __ for <http file>;
+ sub request {
+  my($self,undef,undef,$arg) = @'_;
+  my $response = new HTTP::Response 200, 'OK', [
+   Content_Length=>0,
+   Content_Type  =>'text/html',
+  ];
+
+  $self->collect($arg, $response, sub {\''});
+ }
+}
 
 sub data_url {
 	my $u = new URI 'data:';
@@ -73,7 +91,7 @@ use tests 7; # replace
  is $w->location, $uri, 'location->replace with relative URLs';
 }
 
-use tests 23; # generic accessor tests
+use tests 24; # generic accessor tests
 {             # Copied from HTML::DOM’s html-element.t, these could
               # probably be expanded.
 	$w->get("http://fext.gred/clow/blelp");
@@ -112,4 +130,7 @@ use tests 23; # generic accessor tests
 
 	is $loc->href("about:blank"),'ftp://blid:3865/?',
 	 'retval of href when setting';
+	$w = new WWW'Scripter;
+	is $w->location->href, 'about:blank',
+	 'location->href is about:blank when no browsing has happened';
 }

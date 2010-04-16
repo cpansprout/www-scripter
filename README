@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.010 (alpha)
+WWW::Scripter, version 0.011 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,12 +8,15 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-• New dom_enabled  method that allows HTML parsing to be switched off.
-• Scripts served with a content  type  of  text/html  are  no  longer
-  parsed into inaccessible DOM trees.  This used to cause warning mes-
-  sages if a JS file when read as HTML appeared  to  contain  scripts.
-• The  document  method now returns  undef  if the page is  not  HTML,
-  instead of returning the previous page’s document.
+See the Changes file for the long version.
+
+• Support for multiple ‘windows’
+• Support for link targets and <base target> tags
+• navigator->appCodeName
+• follow_link and  click  now return the response object,  instead of
+  returning nothing.  (Thanks to Hannes Beinert for reporting  this.)
+• Various other bug fixes
+
 
 INSTALLATION
 
@@ -37,9 +40,9 @@ PREREQUISITES
 This module requires  perl  5.8.3 or higher (5.8.4  or  higher  recom-
 mended)  and the following modules,  which can be found on the  CPAN:
 
-  HTML::DOM 0.030 or higher
+  HTML::DOM 0.039 or higher
   Hash::Util::FieldHash::Compat
-  LWP
+  LWP 5.77 or higher
   URI
   WWW::Mechanize 1.2 or higher
 
@@ -57,7 +60,7 @@ Or try using man (it's faster, in my experience):
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2009 Father Chrysostomos
+Copyright (C) 2009-10 Father Chrysostomos
 
 This program is free software; you may redistribute it, modify it, or
 both, under the same terms as perl.

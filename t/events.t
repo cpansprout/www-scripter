@@ -102,6 +102,6 @@ use tests 1; # call_with and event targets
  is $function->target_passed, $m,
   'target passed to a window event handler with a call_with method';
   # My attempt at using separate ‘internal-only’ WWW::Scripter::EventTarget
-  # methods  (for different sets of event listeners for each  page)  back-
+  # objects  (for different sets of event listeners for each  page)  back-
   # fired. That’s what this test is for. This was fixed in version 0.009.
 }

@@ -14,9 +14,9 @@ WriteMakefile(
 	Hash'Util'FieldHash'Compat => 0,
 	HTML::DOM                  =>  .03, # body->onion delegates to win
 	HTML'DOM'Collection        => 0,
-	HTML'DOM'EventTarget       =>  .034, # get_event_listeners that
+	HTML'DOM'EventTarget       =>  .034, # get_event_listeners  that
 	                                            # does not close over
-	HTML::DOM::Interface       =>  .019, # EventTarget  # the target
+	HTML::DOM::Interface       =>  .019, # EventTarget  # the  target
 	HTML::DOM::NodeList::Magic =>  .020, # 2nd arg to new            
 	HTML'DOM'View              =>  .018, # inside-out; writa-
 	HTTP::Headers::Util        => 0,     # ble document
@@ -46,6 +46,7 @@ WriteMakefile(
 	WWW::Mechanize::Link       => 0,
 # for testing:
 	HTML'DOM      =>  .03, # doc->title when title elem is empty
+	HTML'DOM'Element'Form => .039, # make_request with GET and data:
 	lib           => 0,
 	Scalar'Util   => 1.09, # refaddr
 	Test::More    => 0,

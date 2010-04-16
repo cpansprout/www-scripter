@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.010';
+our $VERSION = '0.011';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -124,13 +124,12 @@ sub clone {
 	$class_info{$clone} = [@{$class_info{$self}}];
 	$clone->{handlers} = $self->{handlers};
 	$clone->{page_stack} = WWW'Scripter'History->new($clone);
-	delete $clone->{Scripter_loc};
+	delete @$clone{<Scripter_loc Scripter_nm>};
 	$clone->_clone_plugins;
 	$clone;
 }
 
-# for efficiency’s sake; not actually necessary
-sub title { (shift->document||return)->title }
+sub title { (shift->document||return)->title(@_) }
 
 sub content {
 	my $self = shift;
@@ -150,20 +149,51 @@ sub content {
 
 #sub discontent { ... }
 
-# banana galore!
+# Some parts of this were taken straight from WWW::Mechanize.
 sub follow_link {
 	no warnings 'redefine';
 	my $self = shift;
-	local *find_link = sub {
-		my $link = shift->SUPER::find_link(@_);
-		return unless $link;
-		my $ret;
-		$dom_obj{$link}->trigger_event('click',
-			DOMActivate_default => sub { $ret = $link }
+	my %parms = ( n=>1, @_ );
+
+	if ( $parms{n} eq 'all' ) {
+	    delete $parms{n};
+	    $self->warn( q{follow_link(n=>"all") is not valid} );
+	}
+
+	if(my $link = $self->find_link(%parms)) {
+		my $follow;
+		my $dom_link = $dom_obj{$link};
+		$dom_link->trigger_event('click',
+			# We used to have simply DOMActivate_default => ...
+			# but that  did  absolutely  nothing,  since  the
+			# *_default arguments apply solely to the current
+			# event  (which is a click event).  So  we  have
+			# to override HTML::DOM::Element’s click_default
+			# to  trigger  the  DOMActivate  event  with  the
+			# DOMActivate_default argument. And, no, some sort
+			# of localisation mechanism would not  do  instead,
+			# because event handlers could click other  links
+			# (or even this one again), which events should
+			# remain unaffected by this *_default override.
+			# ~~~ Or should they???
+			click_default => sub {
+			 $dom_link->trigger_event('DOMActivate',
+			  DOMActivate_default => sub { ++$follow }
+			 )
+			}
 		);
-		$ret;
-	};
-	return $self->SUPER::follow_link(@_);
+		return unless $follow;
+		return ($self->find_target($dom_link->target)||$self)
+		        ->get($link->url);
+	}
+	else {
+	    $self->die(
+	     'Link not found: ',
+	      join ", ", map "$_ => '$parms{$_}'", sort keys %parms
+	    )
+	     if $self->{autocheck};
+	}
+	Scripter_plit:
 }
 
 
@@ -284,10 +314,14 @@ sub update_html {
 	$tree->error_handler(sub{$self->warn($@)});
 
 	$tree->default_event_handler_for( link => sub {
-		$self->get(shift->target->href)
+		my $link = shift->target;
+		($self->find_target($link->target)||$self)
+		 ->get($link->href)
 	});
 	$tree->default_event_handler_for( submit => sub {
-		$self->request(shift->target->make_request);
+		my $form = shift->target;
+		($self->find_target($form->target)||$self)
+		 ->request($form->make_request);
 	});
 
 	if(%{$script_handlers{$self}}) {
@@ -403,6 +437,9 @@ sub update_html {
 	$tree->elem_handler(iframe => my $frame_handler = sub {
 		my ($doc,$elem) = @_;
 		my $subwin = $self->clone->clear_history(1);
+		if(defined(my $name = attr $elem 'name')) {
+			name $subwin $name
+		}
 		$elem->contentWindow($subwin);
 		$subwin->_set_parent(my $parent = $doc->defaultView);
 		length(my $src = $elem->src) or return;
@@ -416,8 +453,15 @@ sub update_html {
 		split_header_words $res->header('Content-Type')
 	 }->{charset};
 	$cs or $res->can('content_charset')
-	       and $cs = $res->content_charset;
+	       and $cs = (
+	        $LWP::UserAgent::VERSION <= 5.834 && local *_,
+	        $res->content_charset
+	       );
 	$tree->charset($cs||'iso-8859-1');
+
+	# banana
+	$self->{form} = undef;
+	$self->{forms} = $tree->forms;
 
 	$tree->write(defined $cs ? decode $cs, $src : $src);
 	$tree->close;
@@ -431,7 +475,7 @@ sub update_html {
 	$self->trigger_event('load', target => $tree);
 
 	# banana
-	$self->{form} = ($self->{forms} = $tree->forms)->[0];
+	$self->{form} ||= $self->{forms}[0];
 
 	return;
 }
@@ -500,11 +544,14 @@ sub submit {
   # We have to return the response object if a request was made, so we
   # override the default event handler for this particular case.
   my $go_for_it;
-  $_[0]->current_form->trigger_event(
+  (my $form = $_[0]->current_form)->trigger_event(
    'submit',
     submit_default => sub { ++$go_for_it }
   );
-  $go_for_it ? $_[0]->SUPER::submit : ()
+  $go_for_it
+   ? ($_[0]->find_target($form->target)||$_[0])
+		 ->request($form->make_request)
+   : ()
  }
  else {
   shift->current_form->submit
@@ -519,6 +566,64 @@ sub base {
  }
  length $base ? $base : undef;
 }
+
+sub click { # This duplicates a lot of code from WWW::Mechanize::click,
+            # HTML::DOM::Element::Form::click and HTML::DOM::Ele-
+            # ment::Input, but I don’t see a way around it.
+ if(defined wantarray) {
+  # We have to return the response object if a request was made, so we
+  # override the default event handler for this particular case.
+  my ($self, $button, $x, $y) = @_;
+
+  # From HTML::DOM::Element::Form (ultimately from HTML::Form):
+  # try to find first submit button to activate
+  my $input;
+  my $form = $self->current_form;
+  for ($form->inputs) {
+        next unless $_->type =~ /^(?:submit|image)\z/;
+        next if $button && $_->name ne $button;
+        next if $_->disabled;
+        $input = $_;
+        last;
+  }
+  Carp::croak("No clickable input with name $button")
+   if $button && !$input;
+
+  # From HTML::DOM::Element::Input:
+  # We can’t put this in multiple statements, as the ‘local’ would go out
+  # of scope too soon.
+  my $continue;
+  $input and
+   # ~~~ We are breaking encapsulation here.
+   local($$input{_HTML_DOM_clicked}) = [$x,$y],
+   $input->trigger_event(
+    'click',
+     click_default => sub {
+      $input->trigger_event(
+       'DOMActivate', DOMActivate_default => sub { ++$continue }
+      )
+     }
+   ),
+   $continue || return;
+
+  my $go_for_it;
+  $form->trigger_event(
+   'submit',
+    submit_default => sub { ++$go_for_it }
+  );
+  $go_for_it
+   ? ($self->find_target($form->target)||$self)
+		 ->request($form->make_request)
+   : ()
+ }
+ else {
+  # Unlike the submit method, we *can* delegate to the superclass here,
+  # as the form’s click method  (which  Mech->click calls)  calls our
+  # default_event_handler_for submit, which chooses the right target.
+  shift->SUPER::click(@_);
+ }
+}
+
 
 # ------------- Window interface ------------- #
 
@@ -536,6 +641,9 @@ our %WindowInterface = (
 	setTimeout => NUM|METHOD,
 	clearTimeout => NUM|METHOD,
 	open => OBJ|METHOD,
+	blur => VOID|METHOD,
+	close => VOID|METHOD,
+	focus => VOID|METHOD,
 	window => OBJ|READONLY,
 	self => OBJ|READONLY,
 	navigator => OBJ|READONLY,
@@ -543,6 +651,7 @@ our %WindowInterface = (
 	frames => OBJ|READONLY,
 	length => NUM|READONLY,
 	parent => OBJ|READONLY,
+	name => STR,
 	scroll => VOID|METHOD,
 	scrollBy => VOID|METHOD,
 	scrollTo => VOID|METHOD,
@@ -597,11 +706,53 @@ sub clearTimeout {
 }
 
 sub open {
-	shift->get(shift);
-			# ~~~ Just a placeholder for now.
-	return;
+	my($self,$url,$target,undef,$replace) = @_;
+	$target
+	 = $self->find_target(defined $target ? $target : '_blank');
+	if(defined $url and length $url) {
+		$target||=$self->top;
+		$replace
+		 ? $target->location->replace($url)
+		 : $target->get($url);
+		$target;
+	}
+	elsif(!$target) {
+		# undef or "" in single-window mode: append an ‘unbrowsed’
+		# history entry to simulate a new window
+		(my $ret = $self->top)->{page_stack}->_add();
+		_initial_page($ret);
+		$ret;
+	}
+	else {
+		# open("") with existing window; do nothing
+		$target
+	}
 }
 
+sub close {
+  if(my $g = $_[0]{Scripter_g}) {
+   $g->detach($_[0]);
+  }
+  else {
+   $_[0]->history->go(-1);
+  }
+ _:
+}
+
+sub focus {
+ my $g = $_[0]{Scripter_g} or return;
+ $g->bring_to_front(shift);
+ return;
+}
+
+sub blur {
+ my $g = $_[0]{Scripter_g} or return;
+ my($maybe_self,$next) = $g->windows;
+ $next or return;
+ $maybe_self == $_[0] or return;
+ $g->bring_to_front($next);
+ return;
+}
 
 
 sub history { $_[0]{page_stack} }
@@ -636,6 +787,13 @@ sub parent {
 }
 
 sub _set_parent { weaken( $parent{$_[0]} = $_[1] ) }
+
+sub name {
+ my $self = shift;
+ my $old = $$self{Scripter_nm};
+ $$self{Scripter_nm} = $_[0] if @_;
+ $old;
+}
 
 sub scroll{};  *scrollBy=*scrollTo=*scroll;
 
@@ -685,6 +843,69 @@ sub count_timers {
 		}
 	}
 	sum $count||(), map $_->count_timers, $self->frames or 0;
+}
+
+sub window_group {
+ my $old = (my $self = shift)->{Scripter_g};
+ @_ and weaken($self->{Scripter_g} = shift);
+ $old
+}
+
+sub find_target {
+ my $self = shift;
+ my $name = shift;
+ no warnings 'uninitialized';
+ if(!CORE::length $name and my $doc = document $self) {
+  if(my $base_elem = $doc->look_down(_tag => 'base', target => qr)(?:\)))){
+   $name = $base_elem->attr('target');
+  }
+ }
+ CORE::length $name or return $self;
+ if($name =~ /^_[Bb][Ll][Aa][Nn][Kk]\z/) {
+  if(my $g = $$self{Scripter_g}) {
+   attach $g my $neww = $self->clone->clear_history(1);
+   return $neww;
+  }
+  return undef;
+ }
+ $name =~ /^_[Ss][Ee][Ll][Ff]\z/ and return $self;
+ $name =~ /^_[Pp][Aa][Rr][Ee][Nn][Tt]\z/ and return $self->parent;
+ $name =~ /^_[Tt][Oo][Pp]\z/ and return $self->top;
+
+ # Search subframes, and then ancestors (including their subframes), in
+ # breadth-first order
+ my $current_ancestor = $self;
+ my $prev_ancestor;
+ while() {
+  $current_ancestor->name eq $name and return $current_ancestor;
+  my $next_level = [
+   $prev_ancestor
+    ? grep $_ != $prev_ancestor, $current_ancestor->frames
+    : $current_ancestor->frames
+  ];
+  while($next_level) {
+   my $tmp = $next_level; $next_level = undef;
+   for(@$tmp) {
+    if($_->name eq $name) { return $_ }
+    push @$next_level, $_->frames;
+   }
+  }
+  $prev_ancestor = $current_ancestor;
+  $current_ancestor = $current_ancestor->parent;
+  last if $prev_ancestor == $current_ancestor;
+ }
+
+ # If we reach this point, there are no frames named $name. Return undef
+ # in single-window mode, or look for a window.
+ my $g = $$self{Scripter_g} or return undef;
+ my $named = ($$self{Scripter_n}||=&fieldhash({}))->{$self->response}||={};
+ $$named{$name} && $$named{$name}->window_group
+  ? $$named{$name}
+  : do {
+     attach $g my $neww = $self->clone->clear_history(1);
+     weaken($$named{$name} = $neww);
+     $neww
+    }
 }
 
 # ------------- EventTarget interface ------------- #
@@ -871,10 +1092,13 @@ The history object has a pointer to the ‘current’ history item
 ($index{$self}).
 
 Document objects are referenced by response: $document{$response}. The
-‘document’ method is inherited from HTML::DOM::View, and we set it whenever
-history is browsed, retrieving it from %document.
+window’s ‘document’ method is inherited from HTML::DOM::View, and we set it
+whenever history is browsed, retrieving it from %document.
 
-The ‘unbrowsed’ state mentioned in HTML 5 is represented by an empty array.
+The ‘unbrowsed’ state that used to be mentioned in HTML 5 (before it got
+really convoluted) is represented by an empty array. An empty array can
+exist alongside other entries, as we add one when we simulate a
+new window in single-window mode.
 
 Response objects are also listed in the array ref stored in $res{$self} in
 the order in which they were accessed. Subroutines that add to this array
@@ -914,12 +1138,11 @@ sub _add {
  if(defined $$self[-1][0]) { # if there is no ‘undef’ entry
   splice @$self, ++$index{$self};
   push @$self, \@_;
-  push @{$res{$self}}, $_[1]; 
-  _clean($self,1);
+  $_[1] and push(@{$res{$self}}, $_[1]), _clean($self,1);
  }
  else {
   $$self[-1] = \@_;
-  push @{$res{$self}}, $_[1];
+  push @{$res{$self}}, $_[1] if $_[1];
  }
 }
 
@@ -929,12 +1152,11 @@ sub _replace {
  my $self = shift;
  if(defined $$self[-1][0]) { # if browsing has occurred
   $$self[$index{$self}] = \@_;
-  push @{$res{$self}}, $_[1]; 
-  _clean($self);
+  $_[1] and push(@{$res{$self}}, $_[1]), _clean($self);
  }
  else {
   $$self[-1] = \@_;
-  push @{$res{$self}}, $_[1];
+  push @{$res{$self}}, $_[1] if $_[1];
  }
 }
 
@@ -958,7 +1180,7 @@ sub index { # ~~~ We can probably make this modifiable later.
 
 sub go {
  my $self = shift;
- if(!$_[0]) {
+ if(0==$_[0]) {
   $w{$self}->reload;
  }
  else {
@@ -1205,6 +1427,7 @@ our $VERSION = $WWW'Scripter'VERSION;
 $$_{~~__PACKAGE__} = 'Navigator',
 $$_{Navigator} = {
 	appName => STR|READONLY,
+	appCodeName => STR|READONLY,
 	appVersion => STR|READONLY,
 	userAgent => STR|READONLY,
 }
@@ -1215,6 +1438,7 @@ use constant::lexical {
 	mech => 0,
 	name => 1,
 	vers => 2,
+	cnam => 3,
 };
 
 sub new {
@@ -1227,6 +1451,14 @@ sub appName {
 	my $old = $self->[name];
 	defined $old or $old = ref $self->[mech];
 	@_ and $self->[name] = shift;
+	return $old;
+}
+
+sub appCodeName {
+	my $self = shift;
+	my $old = $self->[cnam];
+	defined $old or $old = ref $self->[mech];
+	@_ and $self->[cnam] = shift;
 	return $old;
 }
 
@@ -1310,20 +1542,30 @@ sub TIEARRAY {
 
 sub FETCH     {
 	my $link = ${$_[0]}->[$_[1]];
-	my $mech_link = new WWW'Mechanize'Link::{
-		url => $link->attr('href'),
-		text => $link->as_text,
-		name => $link->attr('name'),
-		tag => $link->tag,
-		base => $link->ownerDocument->base,
-		attrs => {$link->all_external_attr},
-	};
+	my $mech_link = bless [], WWW'Mechanize'Link::;
+	tie @$mech_link, WWW'Scripter'Link::, $link;
 	$dom_obj{$mech_link} = $link;
 	$mech_link;
 }
 sub FETCHSIZE { scalar @${$_[0]} }
 sub EXISTS    { exists ${$_[0]}->links->[$_[1]] }
 
+package WWW::Scripter::Link;
+
+sub TIEARRAY { bless \(my $x = $_[1]) }
+sub FETCH {
+ my $self = shift;
+ for(shift) {
+  return
+   $_ == 0 ? $$self->attr('href')        : # url
+   $_ == 1 ? $$self->as_text             : # text
+   $_ == 2 ? $$self->attr('name')        : # name
+   $_ == 3 ? $$self->tag                 : # tag
+   $_ == 4 ? $$self->ownerDocument->base : # base
+   $_ == 5 ? {$$self->all_external_attr} : # attrs
+             undef
+ }
+}
 
 package WWW::Scripter::Images;
 
@@ -1340,20 +1582,23 @@ sub TIEARRAY {
 
 sub FETCH     {
 	my $img = ${$_[0]}->[$_[1]];
-	my $mech_img = new WWW'Mechanize'Image::{
-		url => $img->attr('src'),
-		name => $img->attr('name'),
-		tag => $img->tag,
-		base => $img->ownerDocument->base,
-		height => $img->attr('height'),
-		width => $img->attr('width'),
-		alt => $img->attr('alt'),
-	};
+	my $mech_img = new WWW'Scripter'Image:: $img;
 	$dom_obj{$mech_img} = $img;
 	$mech_img;
 }
 sub FETCHSIZE { scalar @${$_[0]} }
 sub EXISTS    { exists ${$_[0]}->links->[$_[1]] }
+
+package WWW::Scripter::Image;
+our @ISA = WWW::Mechanize::Image::;
+sub new { bless \(my $frin = pop) }
+sub url { ${$_[0]}->attr('src')       }
+sub base { ${$_[0]}-ownerDocument->base }
+sub name { ${$_[0]}->attr('name')        }
+sub tag   { ${$_[0]}->tag                }
+sub height { ${$_[0]}->attr('height')    }
+sub width  { ${$_[0]}->attr('width')     }
+sub alt    { ${$_[0]}->attr('alt')       }
 
 
 # ------------- Frames list ------------- #
