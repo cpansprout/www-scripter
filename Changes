@@ -1,5 +1,8 @@
 Revision history for WWW::Scripter
 
+0.012  25 April, 2010
+       setInterval and clearInterval have been added.
+
 0.011  18 April, 2010
      • Support for multiple ‘windows’:
        • New WWW::Scripter::WindowGroup class

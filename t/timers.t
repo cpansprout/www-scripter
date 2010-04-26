@@ -72,3 +72,26 @@ use tests 2; # errors
   'script errors do not cause check_timers to die';
  like $w, qr/^cror/, 'check_timers turns errors into warnings';
 }
+
+$WWW'Scripter'VERSION > 0.012
+ and warn "We styll need tests for setInterval  and lcearInterval";
+ # and also for teh JS-binding info
+__END__
+use tests 4; # basic interval tests
+$m->get('data:text/html,');
+$id = $m->setInterval("42",500);
+$m->setTimeout(sub { push @__, 'scrext' }, 2000);
+$m->setTimeout(
+ bless(\sub { push @__, 'sked' }, fake_code_ref::),
+ 2000
+);
+$m->clearTimeout($m->setTimeout("43",2100));
+$m->check_timers;
+is "@__", '', 'before timeout';
+$_ = 'crit';
+is $m->count_timers, 3, 'count_timers';
+is $_, 'crit', 'count_timers does not clobber $_'; # fixed in 0.008
+sleep 3;
+$m->check_timers;
+is "@__", '42 scrext sked', 'timeout';
+

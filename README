@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.011 (alpha)
+WWW::Scripter, version 0.012 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,14 +8,7 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-See the Changes file for the long version.
-
-• Support for multiple ‘windows’
-• Support for link targets and <base target> tags
-• navigator->appCodeName
-• follow_link and  click  now return the response object,  instead of
-  returning nothing.  (Thanks to Hannes Beinert for reporting  this.)
-• Various other bug fixes
+setInterval and clearInterval have been added.
 
 
 INSTALLATION

@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.011';
+our $VERSION = '0.012';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -47,7 +47,7 @@ fieldhashes \my( %scriptable, %script_handlers,
 #     used to do between pages.
 
 # Fields keyed by document:
-fieldhashes \my( %timeouts, %frames, %evtg );
+fieldhashes \my( %timeouts, %timers, %frames, %evtg );
 
 fieldhash my %document; # keyed by response — we actually use
                         # HTML::DOM::View’s storage for the current doc,
@@ -640,6 +640,8 @@ our %WindowInterface = (
 	location => OBJ,
 	setTimeout => NUM|METHOD,
 	clearTimeout => NUM|METHOD,
+	setInterval => NUM|METHOD,
+	clearInterval => NUM|METHOD,
 	open => OBJ|METHOD,
 	blur => VOID|METHOD,
 	close => VOID|METHOD,
@@ -702,6 +704,22 @@ sub setTimeout {
 
 sub clearTimeout {
 	delete $timeouts{shift->document}[shift];
+	return;
+}
+
+sub setInterval {
+	my $doc = shift->document;
+	my $time = time;
+	my ($code, $ms) = (shift,shift);
+	$ms /= 1000;
+	my $t_o = $timers{$doc}||=[];
+	$$t_o[my $id = @$t_o] =
+		[$ms+$time, $code, @_];
+	return $id;
+}
+
+sub clearInterval {
+	delete $timers{shift->document}[shift];
 	return;
 }
 
@@ -807,23 +825,26 @@ sub check_timers {
 	my $time = time;
 	my $self = shift;
 	local *_;
-	my $t_o = $timeouts{$self->document}||return;
-	for my $id(0..$#$t_o) {
-		next unless $_ = $$t_o[$id];
-		no warnings 'uninitialized';
-		local *@;
-		$$_[0] <= $time and
-			reftype $$_[1] eq 'CODE' || (
-			 exists $INC{'overload.pm'}
-			 && defined blessed $$_[1]
-			 && overload'Method($$_[1],'&{}')
-			)
-			 ? eval { $$_[1]->(@$_[2..$#$_]) }
-			 : ($self->_handler_for_lang('JavaScript')||return)
-				->eval($self,$$_[1]),
-			$@ && $self->warn($@),
-			delete $$t_o[$id];
-	}
+	my $doing_timers_now;
+	for my $timers(\%timeouts, \%timers) {
+		my $t_o = $$timers{$self->document}||next;
+		for my $id(0..$#$t_o) {
+		 next unless $_ = $$t_o[$id];
+		 no warnings 'uninitialized';
+		 local *@;
+		 $$_[0] <= $time and
+		  reftype $$_[1] eq 'CODE' || (
+		   exists $INC{'overload.pm'}
+		   && defined blessed $$_[1]
+		   && overload'Method($$_[1],'&{}')
+		  )
+		   ? eval { $$_[1]->(@$_[2..$#$_]) }
+		   : ($self->_handler_for_lang('JavaScript')||return)
+		  	->eval($self,$$_[1]),
+		  $@ && $self->warn($@),
+		  $doing_timers_now ? $$_[0] = time : delete $$t_o[$id];
+		}
+	} continue { ++$doing_timers_now }
 	$_->check_timers for $self->frames;
 	# ~~~ Should we try to trigger the timers in the right order if,
 	#     exempli gratia, an iframe’s timer was registered with 200 as
@@ -835,11 +856,13 @@ sub check_timers {
 sub count_timers {
  	my $self =  shift;
 	my $count;
-	if(my $t_o = $timeouts{$self->document}) {
+	for(\%timeouts, \%timers) {
+		if(my $t_o = $$_{$self->document}) {
 #use DDS; Dump [map $_&&[map "$_", @$_], @$t_o];
-		for my $id(0..$#$t_o) {
-			next unless $$t_o[$id];
-			++$count
+			for my $id(0..$#$t_o) {
+				next unless $$t_o[$id];
+				++$count
+			}
 		}
 	}
 	sum $count||(), map $_->count_timers, $self->frames or 0;
