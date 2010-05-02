@@ -73,7 +73,8 @@ use tests 2; # errors
  like $w, qr/^cror/, 'check_timers turns errors into warnings';
 }
 
-$WWW'Scripter'VERSION > 0.012
+# I don’t have time to write these for 0.013
+$WWW'Scripter'VERSION > 0.013
  and warn "We styll need tests for setInterval  and lcearInterval";
  # and also for teh JS-binding info
 __END__

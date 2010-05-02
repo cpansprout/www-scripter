@@ -1,5 +1,8 @@
 Revision history for WWW::Scripter
 
+0.013  2 May, 2010
+       navigator->javaEnabled has been added. It always returns false.
+
 0.012  25 April, 2010
        setInterval and clearInterval have been added.
 

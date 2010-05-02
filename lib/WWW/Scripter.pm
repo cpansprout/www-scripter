@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.012';
+our $VERSION = '0.013';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -1439,7 +1439,7 @@ sub replace { # args (URL)
 
 package WWW::Scripter::Navigator;
 
-use HTML::DOM::Interface qw'STR READONLY';
+use HTML::DOM::Interface qw'STR READONLY METHOD BOOL';
 use Scalar::Util 'weaken';
 
 <<'mldistwatch' if 0;
@@ -1453,6 +1453,7 @@ $$_{Navigator} = {
 	appCodeName => STR|READONLY,
 	appVersion => STR|READONLY,
 	userAgent => STR|READONLY,
+	javaEnabled => METHOD|BOOL,
 }
 for \%WWW::Scripter::Interface;
 
@@ -1501,6 +1502,8 @@ sub appVersion {
 sub userAgent {
 	shift->[mech]->agent;
 }
+
+sub javaEnabled{}
 
 # ------------- about: protocol ------------- #
 
