@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.013 (alpha)
+WWW::Scripter, version 0.014 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,7 +8,12 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-navigator->javaEnabled  has  been  added.  It  always  returns  false.
+• navigator->platform has been added.
+• Timers now  use  Time::HiRes,  instead  of  rounding  to  the  near-
+  est second.
+• New wait_for_timers method
+• A new navigator->taintEnabled  method has been added,  that  always
+  returns false.
 
 
 INSTALLATION

@@ -73,26 +73,47 @@ use tests 2; # errors
  like $w, qr/^cror/, 'check_timers turns errors into warnings';
 }
 
-# I don’t have time to write these for 0.013
-$WWW'Scripter'VERSION > 0.013
- and warn "We styll need tests for setInterval  and lcearInterval";
- # and also for teh JS-binding info
-__END__
-use tests 4; # basic interval tests
+use tests 5; # basic interval tests
 $m->get('data:text/html,');
+@__ = ();
 $id = $m->setInterval("42",500);
-$m->setTimeout(sub { push @__, 'scrext' }, 2000);
-$m->setTimeout(
- bless(\sub { push @__, 'sked' }, fake_code_ref::),
- 2000
+$id2 = $m->setInterval(sub { push @___, 'scrext' }, 1000);
+$id3 = $m->setInterval(
+ bless(\sub { push @____, 'sked' }, fake_code_ref::),
+ 1100
 );
-$m->clearTimeout($m->setTimeout("43",2100));
-$m->check_timers;
-is "@__", '', 'before timeout';
-$_ = 'crit';
-is $m->count_timers, 3, 'count_timers';
-is $_, 'crit', 'count_timers does not clobber $_'; # fixed in 0.008
-sleep 3;
-$m->check_timers;
-is "@__", '42 scrext sked', 'timeout';
+$m->clearInterval($m->setInterval("43",1000));
+is $m->count_timers, 3, 'count_timers with setInterval';
+for(1..2500/100) { # 2.5 seconds; 100 ms intervals
+ $m->check_timers;
+ select(undef,undef,undef,.1);
+}
+like "@__", qr/^42 42 42 42 42/, "setInterval with string";
+like "@___", qr/^scrext scrext/, "setInterval with code ref";
+like "@____", qr/^sked sked/, "setInterval with &{}-overloaded object";
+$m->clearInterval($_) for $id, $id2, $id3;
+is $m->count_timers, 0, 'clearInterval';
 
+use tests 5; # wait_for_timers
+$id = $m->setInterval(sub{}, 100);
+$m->setTimeout(sub{}, 100);
+my $start_time = time;
+$m->wait_for_timers(max_wait => 2);
+cmp_ok time-$start_time, '>=', 2, 'wait_for_timers with max_wait';
+is $m->count_timers, 1, 'wait_for_timers left a timer running';
+
+$start_time = time;
+$m->setTimeout(sub{}, 100);
+$m->wait_for_timers(min_timers => 1);
+cmp_ok time-$start_time, '<=', 1, 'wait_for_timers with min_timers';
+is $m->count_timers, 1,
+ 'wait_for_timers with min_timers left a timer running';
+$m->clearInterval($id);
+
+$start_time = time;
+$m->setTimeout(sub{}, 200);
+$m->wait_for_timers(interval => 1);
+# We allow for 2 sec in this regexp, because of overhead; e.g., if the
+# timer starts at 5.999 sec. past midnight, the overhead may cause the cur-
+# rent time to be 7.001.
+like time-$start_time, qr/^[12]\z/, 'wait_for_timers with interval';

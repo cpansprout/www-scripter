@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.013';
+our $VERSION = '0.014';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -20,6 +20,7 @@ use HTTP::Request;
 use Scalar::Util 1.09 qw 'blessed weaken reftype';
 use List'Util 'sum';
 use LWP::UserAgent;
+use Time::HiRes 'time';
 BEGIN {
  require WWW::Mechanize;
  VERSION WWW::Mechanize $LWP::UserAgent::VERSION >= 5.815 ? 1.52 : 1.2
@@ -868,6 +869,22 @@ sub count_timers {
 	sum $count||(), map $_->count_timers, $self->frames or 0;
 }
 
+sub wait_for_timers {
+  my($self, %args) = @_;
+  my $start_time = time if $args{max_wait};
+  my $interval = $args{interval} || .1;
+  my $min = $args{min_timers} || 0;
+  $self->check_timers;
+  while(
+       $self->count_timers > $min
+   and !$args{max_wait} || time-$start_time < $args{max_wait}
+  ) {
+   select(undef,undef,undef,$interval);
+   $self->check_timers;
+  }
+ _:
+}
+
 sub window_group {
  my $old = (my $self = shift)->{Scripter_g};
  @_ and weaken($self->{Scripter_g} = shift);
@@ -1454,6 +1471,8 @@ $$_{Navigator} = {
 	appVersion => STR|READONLY,
 	userAgent => STR|READONLY,
 	javaEnabled => METHOD|BOOL,
+	platform     => STR|READONLY,
+	taintEnabled => METHOD|BOOL,
 }
 for \%WWW::Scripter::Interface;
 
@@ -1463,6 +1482,7 @@ use constant::lexical {
 	name => 1,
 	vers => 2,
 	cnam => 3,
+	plat => 4,
 };
 
 sub new {
@@ -1489,7 +1509,7 @@ sub appCodeName {
 sub appVersion {
 	my $self = shift;
 	my $old = $self->[vers];
-	if(!defined $old) {
+	if(!defined $old and defined wantarray) {
 		$old = $self->userAgent;
 		$old =~ /(\d.*)/s
 		? $old = $1
@@ -1503,7 +1523,31 @@ sub userAgent {
 	shift->[mech]->agent;
 }
 
+sub platform {
+	my $self = shift;
+	my $old = $self->[plat];
+	if(!defined $old and defined wantarray) {
+		my $ua = $self->[mech]->agent;
+		no warnings 'uninitialized';
+		$old
+		 = $ua =~ /\bWin(?:dows|32)?\b/ ? 'Win32'
+		 : $ua =~ /\bMac(?:intosh)\b/   ?  $ua =~ /\bIntel\b/
+		                                    ? 'MacIntel' : 'MacPPC'
+		 : $ua =~ /\b(FreeBSD(?: i386)?|Linux)\b/
+		                                ?  $1
+		 : $^O eq 'MSWin32'             ? 'Win32'
+		 : $^O eq 'MacOS'               ? 'MacPPC'
+		 : $^O eq 'freebsd'             ? 'FreeBSD'
+		 : $^O eq 'linux'               ? 'Linux'
+		 : $^O ne 'darwin'              ?  $^O
+		 : pack "s", 28526, eq 'on' ? 'MacPPC' : 'MacIntel';
+	}
+	@_ and $self->[plat] = shift;
+	return $old;
+}
+
 sub javaEnabled{}
+*taintEnabled=*javaEnabled;
 
 # ------------- about: protocol ------------- #
 

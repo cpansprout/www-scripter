@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.013 (alpha)
+0.014 (alpha)
 
 =head1 SYNOPSIS
 
@@ -121,17 +121,7 @@ below under L</Window-Related Methods>.
 
 =item navigator
 
-Returns the navigator object. This currently has four properties, 
-C<appName>
-(set to C<ref $w>), C<appCodeName> (the same), C<appVersion> 
-(C<< ref($w)->VERSION >>) and 
-C<userAgent> (same as C<< $w->agent >>).
-
-You can pass values to C<appName> and C<appVersion> to set them.
-
-It also has a C<javaEnabled> method that always returns false. (If anyone
-writes a Java plugin, please let me know, and I'll provide a way to make it
-return true.)
+Returns the navigator object. See L<WWW::Scripter::Navigator>.
 
 =item setTimeout ( $code_string, $ms );
 
@@ -250,6 +240,22 @@ if the appropriate interval has elapsed.
 =item count_timers
 
 This returns the number of timers currently registered.
+
+=item wait_for_timers ( %args )
+
+This method waits for any registered timers to finish (calling
+C<check_timers> repeatedly in a loop). Its C<%args> are as follows:
+
+  max_wait    Number indicating for how many seconds the loop
+              should run before giving up and returning.
+  min_timers  Only run until this many timers are left, not until
+              they have all finished.
+  interval    Number of seconds to wait before each iteration of
+              the loop. The default is .1.
+
+Some websites have timers running constantly, that are never cleared. For
+these, you will usually need to set a value for C<min_timers> (or
+C<max_wait>) to avoid an infinite loop.
 
 =item window_group
 
@@ -396,14 +402,14 @@ L<HTML::DOM::EventTarget> for details.
 =head1 CAVEATS
 
 WWW::Scripter does not implement any event loop, so you have to call
-C<check_timers> yourself to trigger any timeouts. After fetching a page,
-you could do something like this:
+C<check_timers> or C<wait_for_timers> yourself to trigger any timeouts. If
+you set up a loop like this,
 
   sleep 1, $w->check_timers  while $w->count_timers;
 
-but beware that this may cause an infinite loop if a timeout sets another
-timeout. It may also cause problems with future versions of WWW::Scripter
-that support C<setInterval>. You basically have to know what works with the
+or if you use C<wait_for_timers>, beware that these may cause an infinite
+loop if a timeout sets another timeout, or if a timer is registered with
+C<setInterval>. You basically have to know what works with the
 pages you are browsing.
 
 =head1 THE C<%WindowInterface> HASH
@@ -539,6 +545,9 @@ circular references.
 
 =back
 
+To report a bug, please send an e-mail to L<bug-WWW-Scripter@rt.cpan.org>
+or use the web interface at L<http://rt.cpan.org/>.
+
 =head1 PREREQUISITES
 
 L<perl> 5.8.3 or higher (5.8.4 or higher recommended)
@@ -567,8 +576,9 @@ WWW::Mechanize, as were some of the tests and test data.
 
 =head1 SEE ALSO
 
-WWW::Scripter sub-modules: L<::Location|WWW::Scripter::Location> and
-L<::History|WWW::Scripter::History>.
+WWW::Scripter sub-modules: L<::Location|WWW::Scripter::Location>,
+L<::History|WWW::Scripter::History> and
+L<::Navigator|WWW::Scripter::Navigator>.
 
 See L<WWW::Mechanize>, of which this is a subclass.
 

@@ -29,6 +29,7 @@ WriteMakefile(
 	overload                   => 0,          # method, but that ver-
 	Scalar::Util               => 1.09, # reftype  # sion  didn’t  in-
 	strict                     => 0,                   # clude $VERSION
+	Time'HiRes                 => 0,
 	URI                        => 0,
 	warnings                   => 0,
 	WWW::Mechanize             => (
