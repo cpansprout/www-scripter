@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.014';
+our $VERSION = '0.015';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -1330,6 +1330,7 @@ use overload fallback => 1, '""' => sub{${+shift}->history->_uri};
 
 $$_{~~__PACKAGE__} = 'Location',
 $$_{Location} = {
+	assign => VOID|METHOD,
 	hash => STR,
 	host => STR,
 	hostname => STR,
@@ -1391,6 +1392,8 @@ sub href {
 	}
 	$old;
 }
+
+sub assign { ${$_[0]}->get($_[1]); () }
 
 sub pathname {
 	my $loc = shift;

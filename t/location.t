@@ -134,3 +134,13 @@ use tests 24; # generic accessor tests
 	is $w->location->href, 'about:blank',
 	 'location->href is about:blank when no browsing has happened';
 }
+
+use tests 3; # assign
+{
+ my $w = new WWW'Scripter;
+ $w->get("data:text/html,");
+ is +()=$w->location->assign("data:text/html,trow"), 0,
+  'assign returneth nought';
+ is $w->uri, "data:text/html,trow", 'assign goes to another page';
+ is $w->history->index, 1, 'assign adds to history';
+}
