@@ -1,5 +1,12 @@
 Revision history for WWW::Scripter
 
+0.016  18 July, 2010
+     • If a script handler’s event2sub method leaves something in  $@,
+       it is now picked up  and  handed  off  to  the  ->warn  method.
+     • check_timers  used to ignore some code ref timers if the  Java-
+       Script plugin was not loaded.  It is only supposed  to  ignore
+       strings of code. This has been fixed.
+
 0.015  20 June, 2010
        location->assign has been added.
 

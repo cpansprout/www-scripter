@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.015 (alpha)
+WWW::Scripter, version 0.016 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,7 +8,11 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-location->assign has been added.
+• If a script handler’s event2sub method leaves something in  $@,  it
+  is now picked up and handed off to the ->warn method.
+• check_timers  used to ignore some code ref timers if the JavaScript
+  plugin was not loaded.  It is only supposed to  ignore  strings  of
+  code. This has been fixed.
 
 
 INSTALLATION
@@ -34,10 +38,13 @@ This module requires  perl  5.8.3 or higher (5.8.4  or  higher  recom-
 mended)  and the following modules,  which can be found on the  CPAN:
 
   HTML::DOM 0.039 or higher
-  Hash::Util::FieldHash::Compat
   LWP 5.77 or higher
   URI
   WWW::Mechanize 1.2 or higher
+
+If you are using perl 5.8.x, you will also need:
+
+  Tie::RefHash::Weak 0.08
 
 DOCUMENTATION
 

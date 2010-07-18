@@ -2,14 +2,13 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.015';
+our $VERSION = '0.016';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
 use CSS'DOM'Interface;
 use Encode qw'encode decode';
 use Exporter 5.57 'import';
-use Hash::Util::FieldHash::Compat qw 'fieldhash fieldhashes';
 use HTML::DOM 0.021;
 use HTML::DOM::EventTarget 0.034; # get_event_listeners that behaves itself
 use HTML::DOM::Interface 0.019 ':all';
@@ -27,6 +26,17 @@ BEGIN {
  # Version 1.52 is necessary for LWP 5.815 compatibility. Version 1.2 is
  # needed otherwise for its handling of cookie jars during cloning.
 }
+
+BEGIN {
+ if(eval { require Hash::Util::FieldHash }) {
+  import Hash::Util::FieldHash qw < fieldhash fieldhashes >;
+ } else {
+  require Tie::RefHash::Weak;
+  VERSION Tie::RefHash::Weak 0.08; # fieldhash
+  import Tie::RefHash::Weak qw < fieldhash fieldhashes >;
+ }
+}
+
 our @ISA = qw( WWW::Mechanize HTML::DOM::View HTML::DOM::EventTarget );
 
 eval <<'' unless exists &UNIVERSAL'DOES;
@@ -416,10 +426,15 @@ sub update_html {
 					$src, $offset
 			        ) : undef;
 
-				my $h = $self->_handler_for_lang($lang);
-				$h && $h->event2sub(
-					$self,$elem,$event,$code,$uri,$line
-				);
+				local *@;
+				if(my $h = $self->_handler_for_lang($lang))
+				{
+				 my $ret = $h->event2sub(
+				  $self,$elem,$event,$code,$uri,$line
+				 );
+				 $@ and $self->warn($@);
+				 return $ret;
+				}
 		});
 	}
 
@@ -827,6 +842,7 @@ sub check_timers {
 	my $self = shift;
 	local *_;
 	my $doing_timers_now;
+	my $jh;
 	for my $timers(\%timeouts, \%timers) {
 		my $t_o = $$timers{$self->document}||next;
 		for my $id(0..$#$t_o) {
@@ -840,8 +856,10 @@ sub check_timers {
 		   && overload'Method($$_[1],'&{}')
 		  )
 		   ? eval { $$_[1]->(@$_[2..$#$_]) }
-		   : ($self->_handler_for_lang('JavaScript')||return)
-		  	->eval($self,$$_[1]),
+		   : (
+		       $jh ||= $self->_handler_for_lang('JavaScript')
+		        and $jh->eval($self,$$_[1])
+		      ),
 		  $@ && $self->warn($@),
 		  $doing_timers_now ? $$_[0] = time : delete $$t_o[$id];
 		}
@@ -1107,7 +1125,7 @@ use WWW::Scripter; $VERSION = $WWW'Scripter'VERSION;
 mldistwatch
 our $VERSION = $WWW'Scripter'VERSION;
 
-use Hash::Util::FieldHash::Compat 'fieldhashes';
+BEGIN { *fieldhashes = *WWW::Scripter::fieldhashes }
 use HTML::DOM::Interface qw 'NUM STR READONLY METHOD VOID';
 use Scalar::Util 'weaken';
 

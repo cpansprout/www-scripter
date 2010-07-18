@@ -105,3 +105,16 @@ use tests 1; # call_with and event targets
   # objects  (for different sets of event listeners for each  page)  back-
   # fired. That’s what this test is for. This was fixed in version 0.009.
 }
+
+use tests 1; # event2sub that leaves stuff in $@
+{
+	my $w;
+	(my $m = new WWW::Scripter onwarn => sub { $w = shift })
+	 ->script_handler(
+			default => new ScriptHandler sub {}, sub {
+				$@ = "strit"
+			}
+	);
+	$m->get("data:text/html,<body onload='plile'>");
+	is $w, 'strit', 'event2sub $@ messages turn into warnings';
+}

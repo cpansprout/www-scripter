@@ -155,3 +155,17 @@ use tests 1; # Can scripts see forms with the Mech interface?
  is $form, $m->document->forms->[0],
   'Scripts can see forms with the mech interface.';
 }
+
+
+use tests 1; # script errors
+{
+	my $w;
+	(my $m = new WWW::Scripter onwarn => sub { $w = shift })
+	 ->script_handler(
+			default => new ScriptHandler sub {
+				$@ = "tew"
+			}, sub {} 
+	);
+	$m->get("data:text/html,<script>sphat</script>");
+	is $w, 'tew', 'script errors turn into warnings';
+}

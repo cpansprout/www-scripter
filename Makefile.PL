@@ -9,6 +9,7 @@ WriteMakefile(
     ABSTRACT_FROM   => 'lib/WWW/Scripter.pod',
     PL_FILES            => {},
     PREREQ_PM => {
+	CSS'DOM'Interface          => 0,
 	Encode                     => 0,
 	Exporter                   => 5.57,
 	Hash'Util'FieldHash'Compat => 0,
@@ -23,6 +24,7 @@ WriteMakefile(
 	HTTP::Message              => 1.34, # array ref headers
 	HTTP::Request              => 1.29, # URI instead of URI::URL
 	HTTP'Response              => 1.35, # likewise
+	List'Util                  => 0,
 	LWP                        => 5,
 	LWP::Protocol              => 0, # version 1.22 at the earliest
 	                                     # (LWP 5), for the collect

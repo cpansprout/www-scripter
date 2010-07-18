@@ -117,3 +117,30 @@ $m->wait_for_timers(interval => 1);
 # timer starts at 5.999 sec. past midnight, the overhead may cause the cur-
 # rent time to be 7.001.
 like time-$start_time, qr/^[12]\z/, 'wait_for_timers with interval';
+
+
+use tests 1; # A bug in 0.015 and earlier: If the JavaScript plugin is not
+             # loaded, check_timers will simply return on finding a string
+             # of code,  instead of continuing to see whether there is  a   
+{            # code ref. This has only been a problem since 0.008, which
+ my $called;  # introduced code ref timers.
+ (my $w = new WWW::Scripter)->setTimeout("prin",0);
+ $w->setTimeout(sub{++$called},0);
+ $w->check_timers; 
+ is $called, 1,
+  'string timeouts do not inhibit code ref timeouts without JS plugin';
+}
+
+use tests 1; # script errors
+{
+	my $w;
+	(my $m = new WWW::Scripter onwarn => sub { $w = shift })
+	 ->script_handler(
+			default => new ScriptHandler sub {
+				$@ = "tew"
+			}, sub {} 
+	);
+	$m->setTimeout("tror",0);
+	$m->check_timers;
+	is $w, 'tew', 'script errors turn into warnings';
+}

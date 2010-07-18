@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.015 (alpha)
+0.016 (alpha)
 
 =head1 SYNOPSIS
 
@@ -127,22 +127,41 @@ Returns the navigator object. See L<WWW::Scripter::Navigator>.
 
 =item setTimeout ( $coderef, $ms, @args );
 
-This schedules the code to run after C<$ms> seconds have elapsed, 
+This schedules the code to run after C<$ms> milliseconds have elapsed, 
 returning a
 number uniquely identifying the time-out. If the first argument is a
 coderef or an object with C<&{}> overloading, it will be called as such.
 Otherwise, it is parsed as a string of JavaScript code. (If the JavaScript
 plugin is not loaded, it will be ignored.)
 
+=item setInterval ( $code_string, $ms );
+
+=item setInterval ( $coderef, $ms, @args );
+
+This method is just like C<setTimeout>, except that, when the code runs,
+it schedules it to run again after C<$ms> milliseconds.
+
 =item clearTimeout ( $timeout_id )
 
-The cancels the time-out corresponding to the C<$timeout_id>.
+The cancels the time-out corresponding to the C<$timeout_id>. This only
+works for those registered with C<setTimeout>.
 
-=item open ( $url )
+=item clearInterval ( $timer_id )
 
-This is a temporary placeholder. Right now it ignores all its args
-except the first, and goes to the given URL, such that C<< ->open(foo) >>
-is equivalent to C<< ->location('foo') >>.
+The cancels the timer corresponding to the C<$timer_id>. This only
+works for those registered with C<setInterval>.
+
+=item open ( $url, $target, $features, $replace )
+
+If C<$target> is not specified or if there is no window or frame named
+C<$target>, this methods opens the C<$url> in a new
+window in multiple-window mode, or at the top-level window in single-window
+mode.
+
+If there is a window or frame named C<$target>, then the C<$url> is opened
+in that window. If C<$replace> is true, it replaces the current page.
+
+The C<$features> argument is ignored.
 
 =item close
 
@@ -447,6 +466,9 @@ true value if there is an error.
 This is called for each HTML event attribute (onclick, etc.). It should
 return a coderef that runs the C<$code>.
 
+If it could not create a code ref, it should return C<undef> and put the
+error message, if any, in C<$@>.
+
 =head1 WRITING PLUGINS
 
 Plugins are usually under the WWW::Scripter::Plugin:: namespace. If a
@@ -552,8 +574,6 @@ or use the web interface at L<http://rt.cpan.org/>.
 
 L<perl> 5.8.3 or higher (5.8.4 or higher recommended)
 
-L<Hash::Util::FieldHash::Compat>
-
 L<HTML::DOM> 0.034 or higher
 
 L<LWP> 5.77 or higher
@@ -561,6 +581,8 @@ L<LWP> 5.77 or higher
 L<URI>
 
 L<WWW::Mechanize> 1.2 or higher
+
+L<Tie::RefHash::Weak> 0.08 or higher for perl 5.8.x.
 
 =head1 AUTHOR & COPYRIGHT
 
