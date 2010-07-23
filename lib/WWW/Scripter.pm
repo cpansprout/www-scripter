@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.016';
+our $VERSION = '0.017';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -1710,7 +1710,7 @@ use HTML::DOM::NodeList::Magic;
 our @ISA = "HTML::DOM::Collection";
 
 {
-	Hash'Util'FieldHash'Compat'fieldhash my %w;
+	WWW::Scripter'fieldhash my %w;
 	my @empty_array;
 	
 	sub new {

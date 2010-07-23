@@ -12,7 +12,6 @@ WriteMakefile(
 	CSS'DOM'Interface          => 0,
 	Encode                     => 0,
 	Exporter                   => 5.57,
-	Hash'Util'FieldHash'Compat => 0,
 	HTML::DOM                  =>  .03, # body->onion delegates to win
 	HTML'DOM'Collection        => 0,
 	HTML'DOM'EventTarget       =>  .034, # get_event_listeners  that
@@ -31,6 +30,9 @@ WriteMakefile(
 	overload                   => 0,          # method, but that ver-
 	Scalar::Util               => 1.09, # reftype  # sion  didn’t  in-
 	strict                     => 0,                   # clude $VERSION
+	eval { require Hash::Util::FieldHash } ? () : (
+	 Tie'RefHash'Weak          => 0.08, # fieldhash
+	),
 	Time'HiRes                 => 0,
 	URI                        => 0,
 	warnings                   => 0,

@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.016 (alpha)
+WWW::Scripter, version 0.017 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,11 +8,9 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-• If a script handler’s event2sub method leaves something in  $@,  it
-  is now picked up and handed off to the ->warn method.
-• check_timers  used to ignore some code ref timers if the JavaScript
-  plugin was not loaded.  It is only supposed to  ignore  strings  of
-  code. This has been fixed.
+• Fixed an internal bug where  Hash::Util::FieldHash::Compat  is used
+  without being loaded  first.  It  just  happened  to  work  because
+  HTML::DOM 0.041 and earlier load it.
 
 
 INSTALLATION

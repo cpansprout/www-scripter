@@ -1,5 +1,10 @@
 Revision history for WWW::Scripter
 
+0.017  25 July, 2010
+     • Fixed an internal bug where  Hash::Util::FieldHash::Compat  is
+       used without being loaded first.  It  just  happened  to  work
+       because HTML::DOM 0.041 and earlier load it.
+
 0.016  18 July, 2010
      • If a script handler’s event2sub method leaves something in  $@,
        it is now picked up  and  handed  off  to  the  ->warn  method.

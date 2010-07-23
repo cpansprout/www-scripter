@@ -1,14 +1,13 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         WWW-Scripter
-version:      0.016
+version:      0.017
 version_from: lib/WWW/Scripter.pm
 installdirs:  site
 requires:
     CSS::DOM::Interface:           0
     Encode:                        0
     Exporter:                      5.57
-    Hash::Util::FieldHash::Compat: 0
     HTML::DOM:                     0.03
     HTML::DOM::Collection:         0
     HTML::DOM::Element::Form:      0.039
@@ -28,6 +27,7 @@ requires:
     Scalar::Util:                  1.09
     strict:                        0
     Test::More:                    0
+    Tie::RefHash::Weak:            0.08
     Time::HiRes:                   0
     URI:                           0
     URI::data:                     0
