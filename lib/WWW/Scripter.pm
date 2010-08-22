@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.017';
+our $VERSION = '0.018';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -341,6 +341,7 @@ sub update_html {
 		defined $script_type or $tree->elem_handler(meta =>
 		    sub {
 			my($tree, $elem) = @_;
+			no warnings 'uninitialized';
 			return unless lc $elem->attr('http-equiv')
 				eq 'content-script-type';
 			$script_type = $elem->attr('content');

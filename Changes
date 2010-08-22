@@ -1,7 +1,13 @@
 Revision history for WWW::Scripter
 
+0.018  22 August, 2010
+       Loading a page that had a <meta>  tag with no http-equiv attri-
+       bute  (e.g.,  <meta charset=utf-7>)  would cause uninitialized
+       warnings in perl 5.12.0 and higher if  a  script  handler  was
+       present. This has been fixed.
+
 0.017  25 July, 2010
-     • Fixed an internal bug where  Hash::Util::FieldHash::Compat  is
+       Fixed an internal bug where  Hash::Util::FieldHash::Compat  is
        used without being loaded first.  It  just  happened  to  work
        because HTML::DOM 0.041 and earlier load it.
 

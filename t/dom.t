@@ -84,6 +84,22 @@ for my $lang ('default', qr//) {
 	is $event_triggered,1, "event handlers ($test_name)";
 }
 
+use tests 1; # Make sure the presence of a callback routine does not cause
+             # <meta> tags to warn that have no http-equiv attribute.
+{
+	my $m = new WWW::Scripter;
+	$m->script_handler(default => new ScriptHandler
+		sub {},
+		sub {}
+	);
+	my $uri = data_url '<meta>';
+	my $w;
+	local $SIG{__WARN__} = sub { $w = shift };
+	$m->get($uri);
+	is $w,undef,
+	 "<meta> tags w/o http-equiv warn not when script handlers exist";
+}
+
 use tests 2; # charset
 {     
 	(my $m = new WWW::Scripter);

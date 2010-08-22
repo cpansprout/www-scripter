@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.017 (alpha)
+WWW::Scripter, version 0.018 (alpha)
 
 For scripting web sites that have scripts
 
@@ -8,9 +8,10 @@ vides scripting support.
 
 CHANGES IN THIS RELEASE
 
-• Fixed an internal bug where  Hash::Util::FieldHash::Compat  is used
-  without being loaded  first.  It  just  happened  to  work  because
-  HTML::DOM 0.041 and earlier load it.
+Loading a page that had a  <meta>  tag with no  http-equiv  attribute
+(e.g. , <meta charset=utf-7>)  would cause uninitialized warnings  in
+perl 5.12.0 and higher if a script  handler  was  present.  This  has
+been fixed.
 
 
 INSTALLATION

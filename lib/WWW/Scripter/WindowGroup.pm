@@ -1,6 +1,6 @@
 package WWW::Scripter::WindowGroup;
 
-$VERSION = '0.017';
+$VERSION = '0.018';
 
 use Carp;
 use WWW'Scripter;
@@ -66,7 +66,7 @@ WWW::Scripter::WindowGroup - Multiple-window browsing environment
 
 =head1 VERSION
 
-Version 0.017
+Version 0.018
 
 =head1 SYNOPSIS
 
