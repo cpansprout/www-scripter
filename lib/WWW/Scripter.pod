@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.018 (alpha)
+0.019 (alpha)
 
 =head1 SYNOPSIS
 

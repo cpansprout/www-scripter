@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.018';
+our $VERSION = '0.019';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -1498,14 +1498,14 @@ $$_{Navigator} = {
 }
 for \%WWW::Scripter::Interface;
 
-no constant 1.03 ();
-use constant::lexical {
+use constant 1.03 our $_const = {
 	mech => 0,
 	name => 1,
 	vers => 2,
 	cnam => 3,
 	plat => 4,
 };
+{ no strict; delete @{__PACKAGE__.::}{_const => keys %$_const} }
 
 sub new {
 	weaken((my $self = bless[],pop)->[mech] = pop);
