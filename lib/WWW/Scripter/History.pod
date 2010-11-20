@@ -5,7 +5,7 @@ WWW::Scripter::History - History object for WWW::Scripter
 
 =head1 VERSION
 
-Version 0.019
+Version 0.020
 
 =head1 METHODS
 

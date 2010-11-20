@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.019 (alpha)
+WWW::Scripter, version 0.020 (alpha)
 
 For scripting web sites that have scripts
 
@@ -7,6 +7,13 @@ vides scripting support.
 
 
 RECENT CHANGES
+
+0.020
+-----
+• There are no longer circular references preventing the window, docu-
+  ment and response objects from being freed.
+• WWW::Mechanize  is now an optional prerequisite,  allowing smoother
+  installation.
 
 0.019
 -----
@@ -42,7 +49,7 @@ PREREQUISITES
 This module requires  perl  5.8.3 or higher (5.8.4  or  higher  recom-
 mended)  and the following modules,  which can be found on the  CPAN:
 
-  HTML::DOM 0.039 or higher
+  HTML::DOM 0.045 or higher
   LWP 5.77 or higher
   URI
   WWW::Mechanize 1.2 or higher

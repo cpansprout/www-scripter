@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.019 (alpha)
+0.020 (alpha)
 
 =head1 SYNOPSIS
 
@@ -574,7 +574,7 @@ or use the web interface at L<http://rt.cpan.org/>.
 
 L<perl> 5.8.3 or higher (5.8.4 or higher recommended)
 
-L<HTML::DOM> 0.034 or higher
+L<HTML::DOM> 0.045 or higher
 
 L<LWP> 5.77 or higher
 

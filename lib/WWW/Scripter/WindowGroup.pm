@@ -1,6 +1,6 @@
 package WWW::Scripter::WindowGroup;
 
-$VERSION = '0.019';
+$VERSION = '0.020';
 
 use Carp;
 use WWW'Scripter;

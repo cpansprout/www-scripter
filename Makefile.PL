@@ -1,6 +1,20 @@
 BEGIN { require 5.006 } # our
 
 use ExtUtils::MakeMaker;
+use lib 'inc';
+use WWW'Online'Tiny online;
+
+my $required_mech_version
+ =	eval {
+	   require LWP::UserAgent and
+	      LWP'UserAgent->VERSION < 5.815 && LWP'UserAgent->VERSION >= 5
+	   and require HTTP::Message and HTTP'Message->VERSION >= 1.34
+	   and require HTTP::Request and HTTP'Request->VERSION >= 1.29
+	   and require HTTP'Response and HTTP'Response->VERSION >= 1.35
+	}
+	   ? 1.2 # cookie cloning
+	   : 1.52 # compatibility with LWP 5.815 with regard to credentials
+;
 
 WriteMakefile(
     NAME            => 'WWW::Scripter',
@@ -12,7 +26,7 @@ WriteMakefile(
 	CSS'DOM'Interface          => 0,
 	Encode                     => 0,
 	Exporter                   => 5.57,
-	HTML::DOM                  =>  .03, # body->onion delegates to win
+	HTML::DOM                  =>  .045, # weaken_response
 	HTML'DOM'Collection        => 0,
 	HTML'DOM'EventTarget       =>  .034, # get_event_listeners  that
 	                                            # does not close over
@@ -36,21 +50,16 @@ WriteMakefile(
 	Time'HiRes                 => 0,
 	URI                        => 0,
 	warnings                   => 0,
-	WWW::Mechanize             => (
-	 eval {
-	  require LWP::UserAgent and
-	      LWP'UserAgent->VERSION < 5.815 && LWP'UserAgent->VERSION >= 5
-	  and require HTTP::Message and HTTP'Message->VERSION >= 1.34
-	  and require HTTP::Request and HTTP'Request->VERSION >= 1.29
-	  and require HTTP'Response and HTTP'Response->VERSION >= 1.35
-	 }
-	  ? 1.2 # cookie cloning
-	  : 1.52 # compatibility with LWP 5.815 with regard to credentials
+	!eval {
+	  require WWW::Mechanize;
+	  VERSION WWW::Mechanize $required_mech_version
+	 } && offline ? () : (
+	  WWW::Mechanize           => $required_mech_version,
+	  WWW::Mechanize::Image    => 0,
+	  WWW::Mechanize::Link     => 0,
 	),
-	WWW::Mechanize::Image      => 0,
-	WWW::Mechanize::Link       => 0,
 # for testing:
-	HTML'DOM      =>  .03, # doc->title when title elem is empty
+#	HTML'DOM      =>  .03, # doc->title when title elem is empty
 	HTML'DOM'Element'Form => .039, # make_request with GET and data:
 	lib           => 0,
 	Scalar'Util   => 1.09, # refaddr

@@ -1,5 +1,11 @@
 Revision history for WWW::Scripter
 
+0.020  17 November, 2010
+     • There are no longer circular references preventing the  window,
+       document and response objects from being freed.
+     • WWW::Mechanize  is  now  an  optional  prerequisite,  allowing
+       smoother installation.
+
 0.019  29 August, 2010
        Fix a dependency problem
 

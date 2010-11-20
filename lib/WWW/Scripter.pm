@@ -2,14 +2,14 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.019';
+our $VERSION = '0.020';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
 use CSS'DOM'Interface;
 use Encode qw'encode decode';
 use Exporter 5.57 'import';
-use HTML::DOM 0.021;
+use HTML::DOM 0.045; # weaken_response
 use HTML::DOM::EventTarget 0.034; # get_event_listeners that behaves itself
 use HTML::DOM::Interface 0.019 ':all';
 use HTML::DOM::View 0.018;
@@ -21,10 +21,17 @@ use List'Util 'sum';
 use LWP::UserAgent;
 use Time::HiRes 'time';
 BEGIN {
- require WWW::Mechanize;
- VERSION WWW::Mechanize $LWP::UserAgent::VERSION >= 5.815 ? 1.52 : 1.2
- # Version 1.52 is necessary for LWP 5.815 compatibility. Version 1.2 is
- # needed otherwise for its handling of cookie jars during cloning.
+ require constant;
+ eval {
+  require WWW::Mechanize;
+  VERSION WWW::Mechanize $LWP::UserAgent::VERSION >= 5.815 ? 1.52 : 1.2;
+  # Version 1.52 is necessary for LWP 5.815 compatibility. Version 1.2 is
+  # needed otherwise for its handling of cookie jars during cloning.
+  import constant Mech => 'WWW::Mechanize';
+  1
+ }
+  or require WWW'Scripter'_Mechanize,
+     import constant Mech => 'WWW::Scripter::_Mechanize';
 }
 
 BEGIN {
@@ -37,7 +44,7 @@ BEGIN {
  }
 }
 
-our @ISA = qw( WWW::Mechanize HTML::DOM::View HTML::DOM::EventTarget );
+our @ISA = (Mech, qw( HTML::DOM::View HTML::DOM::EventTarget ));
 
 eval <<'' unless exists &UNIVERSAL'DOES;
 sub DOES {
@@ -52,7 +59,7 @@ our %EXPORT_TAGS = (
 # Fields that we don’t want fiddled with when the page stack is
 # manipulated:
 fieldhashes \my( %scriptable, %script_handlers,
-                 %class_info, %navi, %top, %parent );
+                 %class_info, %navi );
 # ~~~ Actually, most of these can be eliminated, since we can store them
 #     directly in the object, as we are not doing that cloning that Mech
 #     used to do between pages.
@@ -287,7 +294,7 @@ sub _update_page {
     my $content = $res->decoded_content(charset => "none");
     $content = $res->content if (not defined $content);
 
-    $content .= WWW::Mechanize::_taintedness();
+    $content .= &{\&{Mech."::_taintedness"}};
 
     if (
      !defined $$self{Scripter_dumb} || $$self{Scripter_dumb}
@@ -320,6 +327,7 @@ sub update_html {
 
 	$self->document($document{$res} = my $tree = new HTML::DOM
 			response => $res,
+			weaken_response => 1,
 			cookie_jar => $self->cookie_jar);
 
 	$tree->error_handler(sub{$self->warn($@)});
@@ -805,23 +813,23 @@ sub length { $frames{$_[0]->document}->length }
 
 sub top {
 	my $self = shift;
-	$top{$self} || do {
+	$$self{Scripter_t} || do {
 		my $parent = $self;
 		while() {
-			$parent{$parent} or
-			 weaken( $top{$self} = $parent), last;
-			$parent = $parent{$parent};
+			$$parent{Scripter_pa} or
+			 weaken( $$self{Scripter_t} = $parent), last;
+			$parent = $$parent{Scripter_pa};
 		}
-		$top{$self}
+		$$self{Scripter_t}
 	};
 }
 
 sub parent {
 	my $self = shift;
-	$parent{$self} || $self;
+	$$self{Scripter_pa} || $self;
 }
 
-sub _set_parent { weaken( $parent{$_[0]} = $_[1] ) }
+sub _set_parent { weaken( $_[0]{Scripter_pa} = $_[1] ) }
 
 sub name {
  my $self = shift;
@@ -958,11 +966,13 @@ sub find_target {
  # in single-window mode, or look for a window.
  my $g = $$self{Scripter_g} or return undef;
  my $named = ($$self{Scripter_n}||=&fieldhash({}))->{$self->response}||={};
- $$named{$name} && $$named{$name}->window_group
-  ? $$named{$name}
+ # The extra ${} is there since a reference in a tied hash element cannot
+ # be weakened directly, as the element is just temporary each time.
+ $$named{$name} && ${$$named{$name}}->window_group
+  ? ${$$named{$name}}
   : do {
      attach $g my $neww = $self->clone->clear_history(1);
-     weaken($$named{$name} = $neww);
+     weaken(${$$named{$name}} = $neww);
      $neww
     }
 }
@@ -1186,7 +1196,7 @@ fieldhashes \my ( %w, %index, %res );
 sub new {
 	my ($pack,$mech) = @_;
 	my $self = bless [[]], $pack;
-	weaken($w{$self} = $mech);
+	weaken(${$w{$self}} = $mech);
 	$index{$self} = 0;
 	$res{$self} = [];
 	$self
@@ -1240,7 +1250,7 @@ sub index { # ~~~ We can probably make this modifiable later.
 sub go {
  my $self = shift;
  if(0==$_[0]) {
-  $w{$self}->reload;
+  ${$w{$self}}->reload;
  }
  else {
   my $new_pos = $index{$self}+shift;
@@ -1254,10 +1264,10 @@ sub go {
   # re-fetch the page.
   my $entry = $$self[$new_pos];
   if(defined $$entry[1]) { # response
-   $w{$self}->_update_page(@$entry)
+   ${$w{$self}}->_update_page(@$entry)
   }
   else {
-   local(my $w = $w{$self})->{Scripter_replace} = 1;
+   local(my $w = ${$w{$self}})->{Scripter_replace} = 1;
    $w->request($$entry[0]);
   }
  }
@@ -1290,14 +1300,14 @@ sub pushState {
 sub _clean {
  my($self, $check_max_hist) = @_;
  if($check_max_hist) {
-  my $max = (my $w = $w{$self})->{Scripter_max_hist};
+  my $max = (my $w = ${$w{$self}})->{Scripter_max_hist};
   if($max && @$self > $max) {
    my $diff = @$self-$max;
    $index{$self} -= $diff;
    splice @$self, 0, $diff;
   }
  }
- my $max = $w{$self}->stack_depth + 1;
+ my $max = ${$w{$self}}->stack_depth + 1;
  my $res = $res{$self};
  my %res;
  for(@$self) {
@@ -1327,7 +1337,7 @@ sub _clean {
 
 sub _uri {
  my $self = shift;
- $$self[$index{$self}][2] || $w{$self}->uri;
+ $$self[$index{$self}][2] || ${$w{$self}}->uri;
 }
 
 # ~~~
@@ -1335,11 +1345,6 @@ sub _uri {
 # ------------- Location object ------------- #
 
 package WWW'Scripter'Location;
-
-<<'mldistwatch' if 0;
-use WWW::Scripter; $VERSION = $WWW'Scripter'VERSION;
-mldistwatch
-our $VERSION = $WWW'Scripter'VERSION;
 
 use URI;
 use HTML::DOM::Interface qw'STR METHOD VOID';
@@ -1481,11 +1486,6 @@ package WWW::Scripter::Navigator;
 use HTML::DOM::Interface qw'STR READONLY METHOD BOOL';
 use Scalar::Util 'weaken';
 
-<<'mldistwatch' if 0;
-use WWW::Scripter; $VERSION = $WWW'Scripter'VERSION;
-mldistwatch
-our $VERSION = $WWW'Scripter'VERSION;
-
 $$_{~~__PACKAGE__} = 'Navigator',
 $$_{Navigator} = {
 	appName => STR|READONLY,
@@ -1621,12 +1621,7 @@ sub request { # based on the one in LWP::Protocol::file
 
 package WWW::Scripter::Links;
 
-<<'mldistwatch' if 0;
-use WWW::Scripter; $VERSION = $WWW'Scripter'VERSION;
-mldistwatch
-our $VERSION = $WWW'Scripter'VERSION;
-
-use WWW::Mechanize::Link;
+BEGIN { eval "require ".WWW'Scripter'Mech."::Link" or die $@ }
 
 sub TIEARRAY {
 	bless \(my $links = pop), shift;
@@ -1634,7 +1629,7 @@ sub TIEARRAY {
 
 sub FETCH     {
 	my $link = ${$_[0]}->[$_[1]];
-	my $mech_link = bless [], WWW'Mechanize'Link::;
+	my $mech_link = bless [], WWW'Scripter'Mech."::Link";
 	tie @$mech_link, WWW'Scripter'Link::, $link;
 	$dom_obj{$mech_link} = $link;
 	$mech_link;
@@ -1661,12 +1656,7 @@ sub FETCH {
 
 package WWW::Scripter::Images;
 
-<<'mldistwatch' if 0;
-use WWW::Scripter; $VERSION = $WWW'Scripter'VERSION;
-mldistwatch
-our $VERSION = $WWW'Scripter'VERSION;
-
-use WWW::Mechanize::Image;
+BEGIN { eval "require ".WWW'Scripter'Mech."::Image" or die $@ }
 
 sub TIEARRAY {
 	bless \(my $links = pop), shift;
@@ -1682,7 +1672,7 @@ sub FETCHSIZE { scalar @${$_[0]} }
 sub EXISTS    { exists ${$_[0]}->links->[$_[1]] }
 
 package WWW::Scripter::Image;
-our @ISA = WWW::Mechanize::Image::;
+our @ISA = WWW::Scripter::Mech."::Image";
 sub new { bless \(my $frin = pop) }
 sub url { ${$_[0]}->attr('src')       }
 sub base { ${$_[0]}-ownerDocument->base }
@@ -1696,11 +1686,6 @@ sub alt    { ${$_[0]}->attr('alt')       }
 # ------------- Frames list ------------- #
 
 package WWW::Scripter::Frames;
-
-<<'mldistwatch' if 0;
-use WWW::Scripter; $VERSION = $WWW'Scripter'VERSION;
-mldistwatch
-our $VERSION = $WWW'Scripter'VERSION;
 
 # ~~~ This is horribly inefficient and clunky. It probably needs to be
 #     programmed in full here, or at least the ‘Collection’ part (a tiny
