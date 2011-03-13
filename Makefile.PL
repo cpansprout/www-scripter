@@ -16,13 +16,7 @@ my $required_mech_version
 	   : 1.52 # compatibility with LWP 5.815 with regard to credentials
 ;
 
-WriteMakefile(
-    NAME            => 'WWW::Scripter',
-    AUTHOR          => 'Father Chrysostomos <sprout at, um, cpan dot org>',
-    VERSION_FROM    => 'lib/WWW/Scripter.pm',
-    ABSTRACT_FROM   => 'lib/WWW/Scripter.pod',
-    PL_FILES            => {},
-    PREREQ_PM => {
+my %prereq = (
 	CSS'DOM'Interface          => 0,
 	Encode                     => 0,
 	Exporter                   => 5.57,
@@ -67,7 +61,38 @@ WriteMakefile(
 	URI::data     => 0,
 	URI::file     => 0,
 	utf8          => 0,
-    },
+);
+
+# If the prerequisites do not include WWW::Mechanize, then this is probably
+# an off-line computer that cannot install it and WWW::Scripter will fall
+# back to WWW::Scripter::_Mechanize. In that case, we have to declare
+# WWW::Scripter::_Mechanize’s prerequisites.
+if(!$prereq{'WWW::Mechanize'}) {
+ my %mech_preq = (
+        'Carp'                      => 0,
+        'HTML::Form'                => 1.038,
+        'HTML::HeadParser'          => 0,
+        'HTML::TokeParser'          => 2.28,
+         HTML::TreeBuilder          => 0,
+        'HTTP::Request'             => 1.30,
+         HTTP::Request::Common      => 0,
+        'LWP::UserAgent'            => 5.827,
+         strict                     => 0,
+        'URI::URL'                  => 0,
+         warnings                   => 0,
+ );
+ while(my($mod,$ver) = each %mech_preq) {
+  $prereq{$mod} = $ver if $prereq{$mod} <= $ver;
+ }                                   # ‘<=’, so 0 replaces undef
+}
+
+WriteMakefile(
+    NAME            => 'WWW::Scripter',
+    AUTHOR          => 'Father Chrysostomos <sprout at, um, cpan dot org>',
+    VERSION_FROM    => 'lib/WWW/Scripter.pm',
+    ABSTRACT_FROM   => 'lib/WWW/Scripter.pod',
+    PL_FILES            => {},
+    PREREQ_PM          => \%prereq,
     dist               => { COMPRESS => 'gzip -9f', SUFFIX => 'gz',
                             TAR => 'COPYFILE_DISABLE=1 tar' },
     clean              => { FILES => 'WWW-Scripter-*' },

@@ -93,7 +93,7 @@ is join("-",$g->windows), "$w2-$w-$w3", 'effect of focus (active window)';
 $w3->focus;
 is join("-",$g->windows), "$w3-$w2-$w", 'effect of focus (last window)';
 
-use tests 19; # open
+use tests 20; # open
 $w->close();
 $w->get("data:text/html,");
 $len = $w->history->length;
@@ -143,6 +143,11 @@ is join("-",$g->windows),"$neww-$w",
 isn't $neww, $w, 'the new window is not just the same window again';
 $w->get('data:text/html,<base target=skit>');
 isn't $w->open, $w, 'open ignores <base target>';
+$neww->close;
+$w->get('data:text/html,<base href="http://skit.com/">');
+$neww = $w->open('froon');
+is $neww->uri, 'http://skit.com/froon', 'open respects <base href>';
+$neww->close;
 # These next two tests are commented out because no browser actually imple-
 # ments these the way HTML 5 says too,  and HTML 5 is still in a state of
 # flux.  Right now we follow Safari 4 and Firefox 3.5.  Any attempt  to

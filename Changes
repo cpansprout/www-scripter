@@ -1,5 +1,8 @@
 Revision history for WWW::Scripter
 
+0.021  13 March, 2011
+       The ‘open’ method now respects <base href> elements.
+
 0.020  17 November, 2010
      • There are no longer circular references preventing the  window,
        document and response objects from being freed.

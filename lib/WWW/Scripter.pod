@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.020 (alpha)
+0.021 (alpha)
 
 =head1 SYNOPSIS
 
@@ -161,6 +161,9 @@ mode.
 If there is a window or frame named C<$target>, then the C<$url> is opened
 in that window. If C<$replace> is true, it replaces the current page.
 
+A relative C<$url> is resolved according to the base URL of the current
+window (the one that C<open> is called on), not the C<$target>.
+
 The C<$features> argument is ignored.
 
 =item close
@@ -218,7 +221,7 @@ otherwise.
 
 =item name
 
-This returns the window's named, if applicable. For a frame, this comes
+This returns the window's name, if applicable. For a frame, this comes
 from the frame element to which the window belongs. For a top-level window
 created by C<open>, this is the name that was passed as the second
 argument.

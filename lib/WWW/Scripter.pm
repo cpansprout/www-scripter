@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.020';
+our $VERSION = '0.021';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -753,6 +753,10 @@ sub open {
 	$target
 	 = $self->find_target(defined $target ? $target : '_blank');
 	if(defined $url and length $url) {
+		if(my $base = $self->base) {
+			require URI;
+			$url = URI->new_abs( $url, $base );
+		}
 		$target||=$self->top;
 		$replace
 		 ? $target->location->replace($url)
@@ -1346,7 +1350,6 @@ sub _uri {
 
 package WWW'Scripter'Location;
 
-use URI;
 use HTML::DOM::Interface qw'STR METHOD VOID';
 use Scalar::Util 'weaken';
 

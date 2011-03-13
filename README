@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.020 (alpha)
+WWW::Scripter, version 0.021 (alpha)
 
 For scripting web sites that have scripts
 
@@ -7,6 +7,10 @@ vides scripting support.
 
 
 RECENT CHANGES
+
+0.021
+-----
+The ‘open’ method now respects <base href> elements.
 
 0.020
 -----
@@ -18,13 +22,6 @@ RECENT CHANGES
 0.019
 -----
 Fix a dependency problem
-
-0.018
------
-Loading a page that had a  <meta>  tag with no  http-equiv  attribute
-(e.g. , <meta charset=utf-7>)  would cause uninitialized warnings  in
-perl 5.12.0 and higher if a script  handler  was  present.  This  has
-been fixed.
 
 
 INSTALLATION
@@ -72,7 +69,7 @@ Or try using man (it's faster, in my experience):
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2009-10 Father Chrysostomos
+Copyright (C) 2009-11 Father Chrysostomos
 
 This program is free software; you may redistribute it, modify it, or
 both, under the same terms as perl.
