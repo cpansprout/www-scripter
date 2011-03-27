@@ -22,3 +22,11 @@ use tests 2; # CSS and HTML bindings
  ok exists $class_bindings{\%CSS'DOM'Interface},
   'CSS binding info is present';
 }
+
+use tests 1; # Something nearly forgotten in version 0.022
+test: {
+ for(class_info $w) {
+  if(exists $$_{Screen}) { pass ("class_info lists Screen"); last test }
+ }
+ fail "class_info lists Screen";
+}

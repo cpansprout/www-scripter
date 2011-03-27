@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.021';
+our $VERSION = '0.022';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -58,14 +58,14 @@ our %EXPORT_TAGS = (
 
 # Fields that we don’t want fiddled with when the page stack is
 # manipulated:
-fieldhashes \my( %scriptable, %script_handlers,
+fieldhashes \my( %scriptable, %script_handlers, %scrn,
                  %class_info, %navi );
 # ~~~ Actually, most of these can be eliminated, since we can store them
 #     directly in the object, as we are not doing that cloning that Mech
 #     used to do between pages.
 
 # Fields keyed by document:
-fieldhashes \my( %timeouts, %timers, %frames, %evtg );
+fieldhashes \my( %timeouts, %timers, %frames, %evtg, %status, %dstatus );
 
 fieldhash my %document; # keyed by response — we actually use
                         # HTML::DOM::View’s storage for the current doc,
@@ -674,6 +674,7 @@ our %WindowInterface = (
 	window => OBJ|READONLY,
 	self => OBJ|READONLY,
 	navigator => OBJ|READONLY,
+	screen => OBJ|READONLY,
 	top => OBJ|READONLY,
 	frames => OBJ|READONLY,
 	length => NUM|READONLY,
@@ -682,6 +683,8 @@ our %WindowInterface = (
 	scroll => VOID|METHOD,
 	scrollBy => VOID|METHOD,
 	scrollTo => VOID|METHOD,
+	status => STR,
+	defaultStatus => STR,
 );
 
 sub alert {
@@ -715,6 +718,15 @@ sub navigator {
 	$navi{$self} ||=
 		new WWW::Scripter::Navigator:: $self;
 }
+
+sub screen {
+	my $self = shift;
+	$scrn{$self} ||=
+		bless \my $foo, WWW::Scripter::Screen::;
+}
+@WWW::Scripter::Interface{WWW::Scripter::Screen::,'Screen'} = (
+ 'Screen', {}
+);
 
 sub setTimeout {
 	my $doc = shift->document;
@@ -843,6 +855,20 @@ sub name {
 }
 
 sub scroll{};  *scrollBy=*scrollTo=*scroll;
+
+sub status {
+ my $old = $status{my $doc = shift->document};
+ no warnings 'uninitialized';
+ $status{$doc} = "$_[0]" if @_;
+ defined $old ? $old : ''
+}
+
+sub defaultStatus {
+ my $old = $dstatus{my $doc = shift->document};
+ no warnings 'uninitialized';
+ $dstatus{$doc} = "$_[0]" if @_;
+ defined $old ? $old : ''
+}
 
 # ------------- Window-Related Public Methods -------------- #
 

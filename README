@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.021 (alpha)
+WWW::Scripter, version 0.022 (alpha)
 
 For scripting web sites that have scripts
 
@@ -7,6 +7,13 @@ vides scripting support.
 
 
 RECENT CHANGES
+
+0.022
+-----
+• New status and defaultStatus window properties
+• New  screen  method that returns a screen object.  This object  cur-
+  rently does  nothing,  but  serves  mainly  as  a  placeholder  for
+  future use.
 
 0.021
 -----
@@ -18,10 +25,6 @@ The ‘open’ method now respects <base href> elements.
   ment and response objects from being freed.
 • WWW::Mechanize  is now an optional prerequisite,  allowing smoother
   installation.
-
-0.019
------
-Fix a dependency problem
 
 
 INSTALLATION

@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.021 (alpha)
+0.022 (alpha)
 
 =head1 SYNOPSIS
 
@@ -123,6 +123,10 @@ below under L</Window-Related Methods>.
 
 Returns the navigator object. See L<WWW::Scripter::Navigator>.
 
+=item screen
+
+Returns the screen object. It currently has no features.
+
 =item setTimeout ( $code_string, $ms );
 
 =item setTimeout ( $coderef, $ms, @args );
@@ -233,6 +237,14 @@ argument.
 =item scrollBy
 
 These exist in case scripts try to call them. They don't do anything.
+
+=item status
+
+=item defaultStatus
+
+These are simple accessors. They don't do much apart from storing the
+assigned value as a string. The value assigned is associated with the
+current page.
 
 =back
 

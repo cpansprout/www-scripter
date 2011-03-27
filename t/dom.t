@@ -269,3 +269,6 @@ use tests 1; # no doc object for non-HTML
 
 use tests 1; # DOES
 ok new WWW'Scripter ->DOES(WWW'Scripter::),'DOES';
+
+use tests 1; # screen
+isa_ok new WWW'Scripter->screen, 'WWW::Scripter::Screen', 'screen';

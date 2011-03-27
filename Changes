@@ -1,5 +1,11 @@
 Revision history for WWW::Scripter
 
+0.022  27 March, 2011
+     • New status and defaultStatus window properties
+     • New  screen  method that returns a screen object.  This object
+       currently does nothing, but serves mainly as a placeholder for
+       future use.
+
 0.021  13 March, 2011
        The ‘open’ method now respects <base href> elements.
 

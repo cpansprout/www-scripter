@@ -16,7 +16,17 @@ my $required_mech_version
 	   : 1.52 # compatibility with LWP 5.815 with regard to credentials
 ;
 
-my %prereq = (
+my %lwp_prq = (
+	HTTP::Headers::Util        => 0,
+	HTTP::Message              => 1.34, # array ref headers
+	HTTP::Request              => 1.29, # URI instead of URI::URL
+	HTTP'Response              => 1.35, # likewise
+	LWP                        => 5,
+	LWP::Protocol              => 0, # version 1.22 at the earliest
+	                                     # (LWP 5), for the collect
+);                                                # method, but that ver-
+                                                       # sion  didn’t  in-
+my %prereq = (                                             # clude $VERSION
 	CSS'DOM'Interface          => 0,
 	Encode                     => 0,
 	Exporter                   => 5.57,
@@ -27,17 +37,10 @@ my %prereq = (
 	HTML::DOM::Interface       =>  .019, # EventTarget  # the  target
 	HTML::DOM::NodeList::Magic =>  .020, # 2nd arg to new            
 	HTML'DOM'View              =>  .018, # inside-out; writa-
-	HTTP::Headers::Util        => 0,     # ble document
-	HTTP::Message              => 1.34, # array ref headers
-	HTTP::Request              => 1.29, # URI instead of URI::URL
-	HTTP'Response              => 1.35, # likewise
-	List'Util                  => 0,
-	LWP                        => 5,
-	LWP::Protocol              => 0, # version 1.22 at the earliest
-	                                     # (LWP 5), for the collect
-	overload                   => 0,          # method, but that ver-
-	Scalar::Util               => 1.09, # reftype  # sion  didn’t  in-
-	strict                     => 0,                   # clude $VERSION
+	List'Util                  => 0,     # ble document
+	overload                   => 0,
+	Scalar::Util               => 1.09, # reftype
+	strict                     => 0,
 	eval { require Hash::Util::FieldHash } ? () : (
 	 Tie'RefHash'Weak          => 0.08, # fieldhash
 	),
@@ -74,9 +77,6 @@ if(!$prereq{'WWW::Mechanize'}) {
         'HTML::HeadParser'          => 0,
         'HTML::TokeParser'          => 2.28,
          HTML::TreeBuilder          => 0,
-        'HTTP::Request'             => 1.30,
-         HTTP::Request::Common      => 0,
-        'LWP::UserAgent'            => 5.827,
          strict                     => 0,
         'URI::URL'                  => 0,
          warnings                   => 0,
@@ -84,6 +84,29 @@ if(!$prereq{'WWW::Mechanize'}) {
  while(my($mod,$ver) = each %mech_preq) {
   $prereq{$mod} = $ver if $prereq{$mod} <= $ver;
  }                                   # ‘<=’, so 0 replaces undef
+ %mech_preq = ( # LWP modules
+        'HTTP::Request'             => 1.30,
+         HTTP::Request::Common      => 0,
+        'LWP::UserAgent'            => 5.827,
+ );
+ while(my($mod,$ver) = each %mech_preq) {
+  $lwp_prq{$mod} = $ver if $lwp_prq{$mod} <= $ver;
+ }                                   # ‘<=’, so 0 replaces undef
+}
+
+my $need_lwp5837;
+if($] < 5.0080071) {
+ while(my($m,$v) = each %lwp_prq) {
+  if(!eval{"require $m"} || !eval{$m->VERSION($v)}) {
+   ++$need_lwp5837; last;
+  }
+ }
+}
+if($need_lwp5837) {
+ $prereq{'Bundle::LWP5_837'} = 0;
+}
+else {
+ %prereq = (%prereq, %lwp_prq);
 }
 
 WriteMakefile(
