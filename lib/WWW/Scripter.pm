@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.022';
+our $VERSION = '0.023';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -223,15 +223,22 @@ sub request {
 
     my $meth = $request->method;
     my $orig_uri = $request->uri;
+    my $new_uri;
+    if ((my $path = $orig_uri->path) =~ s-^(/*)/\.\./-$1||'/'-e) {
+     0while $path =~ s\\$1||'/'\e;
+     ($new_uri = $orig_uri->clone)->path($path)
+    }
     my $skip_fetch;
     if(defined($orig_uri->fragment)) {
-     (my $new_uri = $orig_uri->clone)->fragment(undef);
-     $request->uri($new_uri);
+     ($new_uri ||= $orig_uri->clone)->fragment(undef);
 
      # Skip fetching the URL if it is the same (and there is a fragment).
      # We don’t need to strip the fragment from $self->uri before compari-
      # son as that always contains the actual URL  sent  in  the  request.
      $meth eq "GET" and $new_uri->eq($self->uri) and ++$skip_fetch;
+    }
+    if ($new_uri) {
+     $request->uri($new_uri);
     }
 
     my $response;
@@ -375,11 +382,21 @@ sub update_html {
    			        $uri = URI->new_abs( $uri, $base )
 			            if $base;
 			        my $res = $clone->get($uri);
-			        $res->is_success or 
+			        $res->is_success or do {
+			          my $url = $self->uri;
+			          my $offset = $elem->content_offset;
+			          if (!defined $offset) {
+			           $url .= ' (generated HTML)';
+				  }
+			          else {
+			           $url .= ' line '
+			                 . _line_no($src,$offset);
+			          }
 			          $self->warn("couldn't get script $uri: "
-			            . $res->status_line
+			            . $res->status_line . " at $url"
 			          ),
 			          return;
+			        };
 
 			        # Find out the encoding:
 			        my $cs = {
@@ -1682,6 +1699,7 @@ sub FETCH {
              undef
  }
 }
+sub FETCHSIZE { 6 }
 
 package WWW::Scripter::Images;
 

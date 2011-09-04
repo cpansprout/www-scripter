@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.022 (alpha)
+WWW::Scripter, version 0.023 (alpha)
 
 For scripting web sites that have scripts
 
@@ -7,6 +7,17 @@ vides scripting support.
 
 
 RECENT CHANGES
+
+See the Changes file for the long version.
+
+0.023
+-----
+• WWW::Mechanize::Link objects returned by  WWW::Scripter  can now be
+  dumped via  Data::Dumper,  instead of  producing  a  ‘Can't  locate
+  object method FETCHSIZE’ error.
+• /../ at the beginning of a URL path is now stripped out.
+• The warning displayed when a script cannot be loaded now  uses  the
+  URL and line number of the page containing the <script> tag.
 
 0.022
 -----
@@ -18,13 +29,6 @@ RECENT CHANGES
 0.021
 -----
 The ‘open’ method now respects <base href> elements.
-
-0.020
------
-• There are no longer circular references preventing the window, docu-
-  ment and response objects from being freed.
-• WWW::Mechanize  is now an optional prerequisite,  allowing smoother
-  installation.
 
 
 INSTALLATION

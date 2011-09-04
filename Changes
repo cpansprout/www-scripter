@@ -1,5 +1,17 @@
 Revision history for WWW::Scripter
 
+0.023  4 September, 2011
+     • WWW::Mechanize::Link objects returned by WWW::Scripter  (which
+       are actually tied,  but that is an implementation  detail  sub-
+       ject to change) can now be dumped via Data::Dumper, instead of
+       producing a  ‘Can't  locate  object  method  FETCHSIZE’  error.
+     • /../  at the beginning of a URL path is now stripped out  (and
+       all its variations: /////../ /..//..///, etc.).
+     • The error message displayed when a script cannot be loaded now
+       uses the URL and  line  number  of  the  page  containing  the
+       <script>  tag,  instead of a seemingly random line  number  in
+       HTML/DOM.pm.
+
 0.022  27 March, 2011
      • New status and defaultStatus window properties
      • New  screen  method that returns a screen object.  This object
