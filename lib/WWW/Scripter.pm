@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.023';
+our $VERSION = '0.024';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -21,17 +21,12 @@ use List'Util 'sum';
 use LWP::UserAgent;
 use Time::HiRes 'time';
 BEGIN {
- require constant;
- eval {
+  require constant;
   require WWW::Mechanize;
   VERSION WWW::Mechanize $LWP::UserAgent::VERSION >= 5.815 ? 1.52 : 1.2;
   # Version 1.52 is necessary for LWP 5.815 compatibility. Version 1.2 is
   # needed otherwise for its handling of cookie jars during cloning.
   import constant Mech => 'WWW::Mechanize';
-  1
- }
-  or require WWW'Scripter'_Mechanize,
-     import constant Mech => 'WWW::Scripter::_Mechanize';
 }
 
 BEGIN {
@@ -552,8 +547,11 @@ defined $offset or Carp::cluck;
 #     same page. We need a way to make this more efficient. The same goes
 #     for images.
 sub _extract_links {
-	tie my @links, WWW'Scripter'Links:: =>
-		scalar +(my $self = shift)->document->links;
+	my $self = shift;
+	my @links;
+	if (my $doc = $self->document) {
+		tie @links, WWW'Scripter'Links:: => scalar $doc->links;
+	}
 	# banana
 	$self->{links} = \@links;
 	$self->{_extracted_links} = 1;

@@ -137,3 +137,12 @@ for(""," with autocheck")
    qr "czon\S+ 3\z",
   "follow_link$_ can be intercepted by event handlers";
 }
+
+use tests 1; # find_all_links
+# just a simple test to make sure it works with no document
+{
+ my $w = new WWW'Scripter;
+ $w->get('about:oentuheonstue');
+ ok eval { $w->find_all_links; 1 },
+   'find_all_links does not die with no document [rt.cpan.org #72481]';
+}

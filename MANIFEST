@@ -1,8 +1,4 @@
 Changes
-inc/WWW/Online/Tiny.pm
-lib/WWW/Scripter/_Mechanize/Image.pm
-lib/WWW/Scripter/_Mechanize/Link.pm
-lib/WWW/Scripter/_Mechanize.pm
 lib/WWW/Scripter/History.pod
 lib/WWW/Scripter/Location.pod
 lib/WWW/Scripter/WindowGroup.pm

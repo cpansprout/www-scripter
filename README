@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.023 (alpha)
+WWW::Scripter, version 0.024 (alpha)
 
 For scripting web sites that have scripts
 
@@ -9,6 +9,13 @@ vides scripting support.
 RECENT CHANGES
 
 See the Changes file for the long version.
+
+0.024
+-----
+Link-fetching methods, like find_all_links, no longer die if there is
+no document,  which  happens  after  browsing  to  an  unparsable  or
+unretrievable  URL.  Thanks to Kengo  Tsukamoto  for  reporting  this
+[rt.cpan.org #72481].
 
 0.023
 -----
@@ -25,10 +32,6 @@ See the Changes file for the long version.
 • New  screen  method that returns a screen object.  This object  cur-
   rently does  nothing,  but  serves  mainly  as  a  placeholder  for
   future use.
-
-0.021
------
-The ‘open’ method now respects <base href> elements.
 
 
 INSTALLATION

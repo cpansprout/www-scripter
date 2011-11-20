@@ -1,8 +1,6 @@
 BEGIN { require 5.006 } # our
 
 use ExtUtils::MakeMaker;
-use lib 'inc';
-use WWW'Online'Tiny online;
 
 my $required_mech_version
  =	eval {
@@ -47,14 +45,9 @@ my %prereq = (                                             # clude $VERSION
 	Time'HiRes                 => 0,
 	URI                        => 0,
 	warnings                   => 0,
-	!eval {
-	  require WWW::Mechanize;
-	  VERSION WWW::Mechanize $required_mech_version
-	 } && offline ? () : (
-	  WWW::Mechanize           => $required_mech_version,
-	  WWW::Mechanize::Image    => 0,
-	  WWW::Mechanize::Link     => 0,
-	),
+	WWW::Mechanize           => $required_mech_version,
+	WWW::Mechanize::Image    => 0,
+	WWW::Mechanize::Link     => 0,
 # for testing:
 #	HTML'DOM      =>  .03, # doc->title when title elem is empty
 	HTML'DOM'Element'Form => .039, # make_request with GET and data:
@@ -65,34 +58,6 @@ my %prereq = (                                             # clude $VERSION
 	URI::file     => 0,
 	utf8          => 0,
 );
-
-# If the prerequisites do not include WWW::Mechanize, then this is probably
-# an off-line computer that cannot install it and WWW::Scripter will fall
-# back to WWW::Scripter::_Mechanize. In that case, we have to declare
-# WWW::Scripter::_Mechanize’s prerequisites.
-if(!$prereq{'WWW::Mechanize'}) {
- my %mech_preq = (
-        'Carp'                      => 0,
-        'HTML::Form'                => 1.038,
-        'HTML::HeadParser'          => 0,
-        'HTML::TokeParser'          => 2.28,
-         HTML::TreeBuilder          => 0,
-         strict                     => 0,
-        'URI::URL'                  => 0,
-         warnings                   => 0,
- );
- while(my($mod,$ver) = each %mech_preq) {
-  $prereq{$mod} = $ver if $prereq{$mod} <= $ver;
- }                                   # ‘<=’, so 0 replaces undef
- %mech_preq = ( # LWP modules
-        'HTTP::Request'             => 1.30,
-         HTTP::Request::Common      => 0,
-        'LWP::UserAgent'            => 5.827,
- );
- while(my($mod,$ver) = each %mech_preq) {
-  $lwp_prq{$mod} = $ver if $lwp_prq{$mod} <= $ver;
- }                                   # ‘<=’, so 0 replaces undef
-}
 
 my $need_lwp5837;
 if($] < 5.0080071) {

@@ -1,5 +1,15 @@
 Revision history for WWW::Scripter
 
+0.024  20 November, 2011
+     • Link-fetching methods,  like find_all_links,  no longer die if
+       there is no document,  which  happens  after  browsing  to  an
+       unparsable or unretrievable URL. Thanks to Kengo Tsukamoto for
+       reporting this [rt.cpan.org #72481].
+     • WWW::Mechanize is no longer an optional prerequisite.  The rea-
+       son for avoiding it  (test failures behind  a  firewall)  have
+       been resolved, so there is no reason for WWW::Scripter to work
+       around that.
+
 0.023  4 September, 2011
      • WWW::Mechanize::Link objects returned by WWW::Scripter  (which
        are actually tied,  but that is an implementation  detail  sub-
