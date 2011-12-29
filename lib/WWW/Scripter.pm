@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.024';
+our $VERSION = '0.025';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -211,6 +211,7 @@ sub follow_link {
 
 
 sub request {
+  for (my $foo) { # protect against tied $_
     my $self = shift;
     return unless defined(my $request = shift);
 
@@ -261,8 +262,16 @@ sub request {
         )}($request, $response, $orig_uri);
     }
 
-    $self->_update_page($request, $response);
+    return $self->_update_page($request, $response);
+  }
 }
+
+# Protect against tied $_
+sub get { return SUPER::get{@_} for my $foo }
+sub put { return SUPER::put{@_} for my $foo }
+sub post { return SUPER::post{@_} for my $foo }
+sub head { return SUPER::head{@_} for my $foo }
+
 
 # The only difference between this one and Mech is the args to
 # decoded_content. I.e., this is the way Mech *used* to work.
@@ -698,8 +707,9 @@ our %WindowInterface = (
 	scroll => VOID|METHOD,
 	scrollBy => VOID|METHOD,
 	scrollTo => VOID|METHOD,
-	status => STR,
-	defaultStatus => STR,
+# See the comment preceding the commented-out subs.
+#	status => STR,
+#	defaultStatus => STR,
 );
 
 sub alert {
@@ -871,19 +881,23 @@ sub name {
 
 sub scroll{};  *scrollBy=*scrollTo=*scroll;
 
-sub status {
- my $old = $status{my $doc = shift->document};
- no warnings 'uninitialized';
- $status{$doc} = "$_[0]" if @_;
- defined $old ? $old : ''
-}
-
-sub defaultStatus {
- my $old = $dstatus{my $doc = shift->document};
- no warnings 'uninitialized';
- $dstatus{$doc} = "$_[0]" if @_;
- defined $old ? $old : ''
-}
+# ~~~ This conflicts with Mech’s method.  We probably need to bite the
+#     bullet and provide a separate window object for scripts.
+#sub status {
+# my $old = $status{my $doc = shift->document};
+# no warnings 'uninitialized';
+# $status{$doc} = "$_[0]" if @_;
+# defined $old ? $old : ''
+#}
+#
+# ~~~ This one is commented out because it makes no sense without the
+#     previous one.
+#sub defaultStatus {
+# my $old = $dstatus{my $doc = shift->document};
+# no warnings 'uninitialized';
+# $dstatus{$doc} = "$_[0]" if @_;
+# defined $old ? $old : ''
+#}
 
 # ------------- Window-Related Public Methods -------------- #
 
@@ -1754,11 +1768,12 @@ our @ISA = "HTML::DOM::Collection";
 		      )
 		    : HTML'DOM'NodeList->new(\@empty_array)
 		  )
-		; $w{$ret} = $window
+		; Scalar'Util'weaken($_) for $doc, $window;
+		; $w{$ret} = \$window;
 		; $ret
 	}
 	
-	sub window { $w{+shift} }
+	sub window { ${$w{+shift}||return undef} }
 	}
 
 use overload fallback => 1,'@{}' => sub {

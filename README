@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.024 (alpha)
+WWW::Scripter, version 0.025 (alpha)
 
 For scripting web sites that have scripts
 
@@ -9,6 +9,15 @@ vides scripting support.
 RECENT CHANGES
 
 See the Changes file for the long version.
+
+0.025
+-----
+• The get, head, post, put and request methods now localise *_ to pro-
+  tect a tied  $_  from modification by other  modules  WWW::Scripter
+  depends on.
+• The status and defaultStatus methods have been removed due to a con-
+  flict with a WWW::Mechanize method.
+• A memory leak in the ->frames method has been fixed.
 
 0.024
 -----

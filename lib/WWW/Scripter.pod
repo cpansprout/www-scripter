@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.024 (alpha)
+0.025 (alpha)
 
 =head1 SYNOPSIS
 
@@ -238,9 +238,13 @@ argument.
 
 These exist in case scripts try to call them. They don't do anything.
 
+=begin comment
+
 =item status
 
 =item defaultStatus
+
+=end comment
 
 These are simple accessors. They don't do much apart from storing the
 assigned value as a string. The value assigned is associated with the

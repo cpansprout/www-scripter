@@ -1,5 +1,7 @@
 #!perl -w
 
+# Test the ->base method.
+
 use lib 't';
 use warnings;
 no warnings qw 'utf8 parenthesis regexp once qw bareword syntax';

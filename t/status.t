@@ -1,5 +1,10 @@
 #!perl -w
 
+use Test'More skip_all => 'removed due to conflicts';
+
+See the comments before the commented-out subroutine definitions in
+lib/WWW/Scripter.pm.
+
 use lib 't';
 use WWW'Scripter;
 
