@@ -1,5 +1,10 @@
 Revision history for WWW::Scripter
 
+0.026  11 March, 2012
+       The history property is now listed in %WindowInterface,  allow-
+       ing scripts to access it.  Thanks to John Hulala for reporting
+       the issue.
+
 0.025  1 January, 2012
      • The get, head, post, put and request methods now alias $_ to a
        new scalar to protect a tied  $_  belonging to the caller from

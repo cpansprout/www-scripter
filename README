@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.025 (alpha)
+WWW::Scripter, version 0.026 (alpha)
 
 For scripting web sites that have scripts
 
@@ -9,6 +9,11 @@ vides scripting support.
 RECENT CHANGES
 
 See the Changes file for the long version.
+
+0.026
+-----
+The  history  property is now listed  in  %WindowInterface,  allowing
+scripts to access it.  Thanks to John Hulala for reporting the  issue.
 
 0.025
 -----
@@ -25,22 +30,6 @@ Link-fetching methods, like find_all_links, no longer die if there is
 no document,  which  happens  after  browsing  to  an  unparsable  or
 unretrievable  URL.  Thanks to Kengo  Tsukamoto  for  reporting  this
 [rt.cpan.org #72481].
-
-0.023
------
-• WWW::Mechanize::Link objects returned by  WWW::Scripter  can now be
-  dumped via  Data::Dumper,  instead of  producing  a  ‘Can't  locate
-  object method FETCHSIZE’ error.
-• /../ at the beginning of a URL path is now stripped out.
-• The warning displayed when a script cannot be loaded now  uses  the
-  URL and line number of the page containing the <script> tag.
-
-0.022
------
-• New status and defaultStatus window properties
-• New  screen  method that returns a screen object.  This object  cur-
-  rently does  nothing,  but  serves  mainly  as  a  placeholder  for
-  future use.
 
 
 INSTALLATION
@@ -88,7 +77,7 @@ Or try using man (it's faster, in my experience):
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2009-11 Father Chrysostomos
+Copyright (C) 2009-12 Father Chrysostomos
 
 This program is free software; you may redistribute it, modify it, or
 both, under the same terms as perl.

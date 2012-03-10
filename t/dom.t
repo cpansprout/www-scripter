@@ -272,3 +272,6 @@ ok new WWW'Scripter ->DOES(WWW'Scripter::),'DOES';
 
 use tests 1; # screen
 isa_ok new WWW'Scripter->screen, 'WWW::Scripter::Screen', 'screen';
+
+use tests 1; # %WindowInterface
+ok exists $WWW::Scripter'WindowInterface{history};

@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.025';
+our $VERSION = '0.026';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -707,6 +707,7 @@ our %WindowInterface = (
 	scroll => VOID|METHOD,
 	scrollBy => VOID|METHOD,
 	scrollTo => VOID|METHOD,
+	history => OBJ|READONLY,
 # See the comment preceding the commented-out subs.
 #	status => STR,
 #	defaultStatus => STR,
