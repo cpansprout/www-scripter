@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.026 (alpha)
+WWW::Scripter, version 0.027 (alpha)
 
 For scripting web sites that have scripts
 
@@ -9,6 +9,14 @@ vides scripting support.
 RECENT CHANGES
 
 See the Changes file for the long version.
+
+0.027
+-----
+• The navigator object now has a  cookieEnabled  property.  Thanks to
+  John Hulala for the suggestion.
+• Requests  for  scripts  now  use  the  right  referrer  instead  of
+  of always  about:blank.  Thanks  to  John  Hulala  for  the  report
+  [rt.cpan.org #75696].
 
 0.026
 -----
@@ -23,13 +31,6 @@ scripts to access it.  Thanks to John Hulala for reporting the  issue.
 • The status and defaultStatus methods have been removed due to a con-
   flict with a WWW::Mechanize method.
 • A memory leak in the ->frames method has been fixed.
-
-0.024
------
-Link-fetching methods, like find_all_links, no longer die if there is
-no document,  which  happens  after  browsing  to  an  unparsable  or
-unretrievable  URL.  Thanks to Kengo  Tsukamoto  for  reporting  this
-[rt.cpan.org #72481].
 
 
 INSTALLATION

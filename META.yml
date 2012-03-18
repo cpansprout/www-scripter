@@ -1,42 +1,52 @@
-# http://module-build.sourceforge.net/META-spec.html
-#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
-name:         WWW-Scripter
-version:      0.026
-version_from: lib/WWW/Scripter.pm
-installdirs:  site
+---
+abstract: 'For scripting web sites that have scripts'
+author:
+  - 'Father Chrysostomos <sprout at, um, cpan dot org>'
+build_requires:
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 6.6302, CPAN::Meta::Converter version 2.120351'
+license: unknown
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: WWW-Scripter
+no_index:
+  directory:
+    - t
+    - inc
 requires:
-    CSS::DOM::Interface:           0
-    Encode:                        0
-    Exporter:                      5.57
-    HTML::DOM:                     0.045
-    HTML::DOM::Collection:         0
-    HTML::DOM::Element::Form:      0.039
-    HTML::DOM::EventTarget:        0.034
-    HTML::DOM::Interface:          0.019
-    HTML::DOM::NodeList::Magic:    0.02
-    HTML::DOM::View:               0.018
-    HTTP::Headers::Util:           0
-    HTTP::Message:                 1.34
-    HTTP::Request:                 1.29
-    HTTP::Response:                1.35
-    lib:                           0
-    List::Util:                    0
-    LWP:                           5
-    LWP::Protocol:                 0
-    overload:                      0
-    Scalar::Util:                  1.09
-    strict:                        0
-    Test::More:                    0
-    Tie::RefHash::Weak:            0.08
-    Time::HiRes:                   0
-    URI:                           0
-    URI::data:                     0
-    URI::file:                     0
-    utf8:                          0
-    warnings:                      0
-    WWW::Mechanize:                1.52
-    WWW::Mechanize::Image:         0
-    WWW::Mechanize::Link:          0
-
-distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.17
+  CSS::DOM::Interface: 0
+  Encode: 0
+  Exporter: 5.57
+  HTML::DOM: 0.045
+  HTML::DOM::Collection: 0
+  HTML::DOM::Element::Form: 0.039
+  HTML::DOM::EventTarget: 0.034
+  HTML::DOM::Interface: 0.019
+  HTML::DOM::NodeList::Magic: 0.02
+  HTML::DOM::View: 0.018
+  HTTP::Headers::Util: 0
+  HTTP::Message: 1.34
+  HTTP::Request: 1.29
+  HTTP::Response: 1.35
+  LWP: 5
+  LWP::Protocol: 0
+  List::Util: 0
+  Scalar::Util: 1.09
+  Test::More: 0
+  Time::HiRes: 0
+  URI: 0
+  URI::data: 0
+  URI::file: 0
+  WWW::Mechanize: 1.52
+  WWW::Mechanize::Image: 0
+  WWW::Mechanize::Link: 0
+  lib: 0
+  overload: 0
+  strict: 0
+  utf8: 0
+  warnings: 0
+version: 0.027

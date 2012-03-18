@@ -1,5 +1,13 @@
 Revision history for WWW::Scripter
 
+0.027  18 March, 2012
+     • The navigator object now has a cookieEnabled property.  Thanks
+       to John Hulala for the suggestion.  (I wasn’t aware that brows-
+       ers had this.)
+     • Requests for scripts now use the  right  referrer  instead  of
+       always  about:blank.  Thanks to John  Hulala  for  the  report
+       [rt.cpan.org #75696].
+
 0.026  11 March, 2012
        The history property is now listed in %WindowInterface,  allow-
        ing scripts to access it.  Thanks to John Hulala for reporting

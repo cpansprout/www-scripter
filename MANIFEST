@@ -45,3 +45,4 @@ t/timers.t
 t/title.t
 t/windows.t
 META.yml                                 Module meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)

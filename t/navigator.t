@@ -55,3 +55,8 @@ is $n->platform, 'trow', 'platform is some random string based on $^O';
 use tests 1;
 is new ghin ->navigator->appName,  'ghin',
  'appName from empty WWW::Scripter subclass';
+
+use tests 2;
+ok $n->cookieEnabled, 'cookieEnabled by default';
+ok !new WWW::Scripter cookie_jar=>undef, ->navigator->cookieEnabled,
+  '!cookieEnabled when cookie_jar is undef';

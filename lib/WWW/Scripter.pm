@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.026';
+our $VERSION = '0.027';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -381,6 +381,7 @@ sub update_html {
 			        (
 			         my $clone = $self->clone->clear_history(1)
 			        )->dom_enabled(0);
+			        $clone->{last_uri} = $self->{uri};
 			        require URI;
 			        my $base = $self->base;
    			        $uri = URI->new_abs( $uri, $base )
@@ -1554,6 +1555,7 @@ $$_{Navigator} = {
 	javaEnabled => METHOD|BOOL,
 	platform     => STR|READONLY,
 	taintEnabled => METHOD|BOOL,
+	cookieEnabled => BOOL|READONLY,
 }
 for \%WWW::Scripter::Interface;
 
@@ -1629,6 +1631,8 @@ sub platform {
 
 sub javaEnabled{}
 *taintEnabled=*javaEnabled;
+
+sub cookieEnabled { defined $_[0][mech]->cookie_jar }
 
 # ------------- about: protocol ------------- #
 
