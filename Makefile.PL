@@ -20,9 +20,9 @@ my %prereq = (
 	Exporter                   => 5.57,
 	HTML::DOM                  =>  .045, # weaken_response
 	HTML'DOM'Collection        => 0,
-	HTML'DOM'EventTarget       =>  .034, # get_event_listeners  that
-	                                            # does not close over
-	HTML::DOM::Interface       =>  .019, # EventTarget  # the  target
+	HTML'DOM'EventTarget       =>  .053, # DOMAttrModified events with
+	                                            # correct type and can-
+	HTML::DOM::Interface       =>  .019, # EventTarget  # cellability
 	HTML::DOM::NodeList::Magic =>  .020, # 2nd arg to new            
 	HTML'DOM'View              =>  .018, # inside-out; writa-
 	HTTP::Headers::Util        => 0,     # ble document

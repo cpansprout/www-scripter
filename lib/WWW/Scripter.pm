@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.027';
+our $VERSION = '0.028';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -10,8 +10,8 @@ use CSS'DOM'Interface;
 use Encode qw'encode decode';
 use Exporter 5.57 'import';
 use HTML::DOM 0.045; # weaken_response
-use HTML::DOM::EventTarget 0.034; # get_event_listeners that behaves itself
-use HTML::DOM::Interface 0.019 ':all';
+use HTML::DOM::EventTarget 0.053; # DOMAttrModified with correct type and
+use HTML::DOM::Interface 0.019 ':all';  # cancellability
 use HTML::DOM::View 0.018;
 use HTTP::Headers::Util 'split_header_words';
 use HTTP::Response;
@@ -321,6 +321,24 @@ sub _update_page {
     return $res;
 } # _update_page
 
+sub _fetch_url {
+    my ($self) = @'_;
+    my $fetcher = $self->{Scripter_f}
+	||= do {
+			        (
+			         my $clone = $self->clone->clear_history(1)
+			        )->dom_enabled(0);
+				$clone->max_history(1);
+				$clone;
+	       };
+    $fetcher->{last_uri} = $self->{uri};
+    require URI;
+    my $base = $self->base;
+    $_[1] = URI->new_abs( $_[1], $base )
+			            if $base;
+    $fetcher->get($_[1]);
+}
+
 sub update_html {
 	my ($self,$src) = @_;
 
@@ -378,15 +396,7 @@ sub update_html {
 			    my $uri;
 			    my($inline, $code, $line) = 0;
 			    if($uri = $elem->attr('src')) {
-			        (
-			         my $clone = $self->clone->clear_history(1)
-			        )->dom_enabled(0);
-			        $clone->{last_uri} = $self->{uri};
-			        require URI;
-			        my $base = $self->base;
-   			        $uri = URI->new_abs( $uri, $base )
-			            if $base;
-			        my $res = $clone->get($uri);
+			        my $res = _fetch_url($self, $uri);
 			        $res->is_success or do {
 			          my $url = $self->uri;
 			          my $offset = $elem->content_offset;
@@ -474,6 +484,25 @@ sub update_html {
 		$_[1]->replace_with_content->delete;
 		# ~~~ why does this need delete?
 	});
+
+	if($self->{Scripter_i}){
+	 $tree->elem_handler(img => my $img_cb = sub {
+	  return unless defined (my $src = $_[1]->attr('src'));
+	  my $res = _fetch_url($self, $src);
+	  defined $self->{Scripter_ih} &&
+	   $self->{Scripter_ih}($self,$_[1],$res);
+	 });
+	 $tree->elem_handler(input => sub {
+	  return unless $_[1]->type eq 'image';
+	  goto &$img_cb;
+	 });
+	 $tree->default_event_handler(sub {
+	  return unless (my $event = shift)->type eq 'DOMAttrModified';
+	  return unless (my $target = target $event)->tag=~/^i(mg|nput)\z/;
+	  return if $1 eq 'nput' && $target->type ne 'image';
+	  &$img_cb(undef, $target);
+	 });
+	}
 
 	$tree->defaultView(
 		$self
@@ -1056,6 +1085,20 @@ for my $meth (qw b addEventListener removeEventListener event_handler
   }
 }
 
+
+# ------------- Image Hooks -------------- #
+
+sub fetch_images {
+ my $old = (my $self = shift)->{Scripter_i};
+ @_ and $self->{Scripter_i} = shift;
+ $old
+}
+
+sub image_handler {
+ my $old = (my $self = shift)->{Scripter_ih};
+ @_ and $self->{Scripter_ih} = shift;
+ $old
+}
 
 # ------------- Scripting hooks and what-not ------------- #
 

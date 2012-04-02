@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.027 (alpha)
+0.028 (alpha)
 
 =head1 SYNOPSIS
 
@@ -27,7 +27,7 @@ This is a subclass of L<WWW::Mechanize> that uses the W3C DOM and provides
 support for scripting.
 
 No actual scripting engines are provided I<with> WWW::Scripter, but are
-available as separate plugins. (See also the L</SEE ALSO> section below.)
+available as separate plugins.  (See also the L</SEE ALSO> section below.)
 
 =head1 SINGLE VS MULTIPLE WINDOWS
 
@@ -68,9 +68,10 @@ can think of it as short for either 'WWW::Scripter' or 'window'.
 
  my $w = new WWW::Scripter %args
 
-The constructor accepts named arguments. There are only two that 
-WWW::Scripter itself deals with directly. The rest are passed on to the
-superclass. See L<WWW::Mechanize> and L<LWP::UserAgent> for details on what
+The constructor accepts named arguments.  There are only two that 
+WWW::Scripter itself deals with directly.  The rest are passed on to the
+superclass.  See L<WWW::Mechanize> and L<LWP::UserAgent> for details on
+what
 other arguments
 the constructor accepts.
 
@@ -81,18 +82,20 @@ The two arguments are:
 =item max_docs
 
 The maximum number of document objects to keep in history (along with their
-corresponding request and response objects). If
-this is omitted, Mech's C<stack_depth> + 1 will be used. This is off by one
+corresponding request and response objects).  If
+this is omitted, Mech's C<stack_depth> + 1 will be used.  This is off by
+one
 because C<stack_depth> is the number of pages you can go back to, so it is
-one less than the number of recorded pages. C<max_docs> considers 0 to be
+one less than the number of recorded pages.  C<max_docs> considers 0 to be
 equivalent to infinity.
 
 =item max_history
 
 If the number of items in history exceeds C<max_docs>, WWW::Scripter will still keep the request objects (so
 you can go back more than C<max_docs> times and previously visited pages
-will reload). C<max_history> restricts the total number of items in history
-(whether full document objects or just requests). 0 is equivalent to 
+will reload).  C<max_history> restricts the total number of items in
+history (whether full document objects or just requests).  0 is equivalent
+to 
 infinity.
 
 =back
@@ -121,11 +124,11 @@ below under L</Window-Related Methods>.
 
 =item navigator
 
-Returns the navigator object. See L<WWW::Scripter::Navigator>.
+Returns the navigator object.  See L<WWW::Scripter::Navigator>.
 
 =item screen
 
-Returns the screen object. It currently has no features.
+Returns the screen object.  It currently has no features.
 
 =item setTimeout ( $code_string, $ms );
 
@@ -133,9 +136,9 @@ Returns the screen object. It currently has no features.
 
 This schedules the code to run after C<$ms> milliseconds have elapsed, 
 returning a
-number uniquely identifying the time-out. If the first argument is a
+number uniquely identifying the time-out.  If the first argument is a
 coderef or an object with C<&{}> overloading, it will be called as such.
-Otherwise, it is parsed as a string of JavaScript code. (If the JavaScript
+Otherwise, it is parsed as a string of JavaScript code.  (If the JavaScript
 plugin is not loaded, it will be ignored.)
 
 =item setInterval ( $code_string, $ms );
@@ -147,12 +150,12 @@ it schedules it to run again after C<$ms> milliseconds.
 
 =item clearTimeout ( $timeout_id )
 
-The cancels the time-out corresponding to the C<$timeout_id>. This only
+The cancels the time-out corresponding to the C<$timeout_id>.  This only
 works for those registered with C<setTimeout>.
 
 =item clearInterval ( $timer_id )
 
-The cancels the timer corresponding to the C<$timer_id>. This only
+The cancels the timer corresponding to the C<$timer_id>.  This only
 works for those registered with C<setInterval>.
 
 =item open ( $url, $target, $features, $replace )
@@ -163,7 +166,7 @@ window in multiple-window mode, or at the top-level window in single-window
 mode.
 
 If there is a window or frame named C<$target>, then the C<$url> is opened
-in that window. If C<$replace> is true, it replaces the current page.
+in that window.  If C<$replace> is true, it replaces the current page.
 
 A relative C<$url> is resolved according to the base URL of the current
 window (the one that C<open> is called on), not the C<$target>.
@@ -178,13 +181,13 @@ previous entry in history (so that it is the opposite of C<open>).
 
 =item focus
 
-In multiple-window mode, this brings this window to the front. In
+In multiple-window mode, this brings this window to the front.  In
 single-window mode (when there is no window group) it does nothing.
 
 =item blur
 
 In multiple-window mode, this sends this window back one, if it is the
-frontmost window. In
+frontmost window.  In
 single-window mode (when there is no window group) it does nothing.
 
 =item history
@@ -201,9 +204,9 @@ These two return the window object itself.
 
 Although the W3C DOM specifies that this return C<$w> (the window itself),
 for efficiency's sake this returns a separate object which one can use as
-a hash or array reference to access its sub-frames. (The window object 
+a hash or array reference to access its sub-frames.  (The window object 
 itself cannot be used that
-way.) The frames object (class WWW::Scripter::Frames) also has a C<window> 
+way.)  The frames object (class WWW::Scripter::Frames) also has a C<window> 
 method that returns C<$w>.
 
 In list context a list of frames is returned.
@@ -225,8 +228,8 @@ otherwise.
 
 =item name
 
-This returns the window's name, if applicable. For a frame, this comes
-from the frame element to which the window belongs. For a top-level window
+This returns the window's name, if applicable.  For a frame, this comes
+from the frame element to which the window belongs.  For a top-level window
 created by C<open>, this is the name that was passed as the second
 argument.
 
@@ -236,7 +239,7 @@ argument.
 
 =item scrollBy
 
-These exist in case scripts try to call them. They don't do anything.
+These exist in case scripts try to call them.  They don't do anything.
 
 =begin comment
 
@@ -244,11 +247,11 @@ These exist in case scripts try to call them. They don't do anything.
 
 =item defaultStatus
 
-=end comment
-
-These are simple accessors. They don't do much apart from storing the
-assigned value as a string. The value assigned is associated with the
+These are simple accessors.  They don't do much apart from storing the
+assigned value as a string.  The value assigned is associated with the
 current page.
+
+=end comment
 
 =back
 
@@ -265,8 +268,8 @@ to the object's window behaviour.
 
 =item set_prompt_function
 
-Use these to set the functions called by the above methods. There are no
-default C<confirm> and C<prompt> functions. The default C<alert> prints to
+Use these to set the functions called by the above methods.  There are no
+default C<confirm> and C<prompt> functions.  The default C<alert> prints to
 the currently selected file handle, with a line break tacked on the end.
 
 =item check_timers
@@ -282,16 +285,16 @@ This returns the number of timers currently registered.
 =item wait_for_timers ( %args )
 
 This method waits for any registered timers to finish (calling
-C<check_timers> repeatedly in a loop). Its C<%args> are as follows:
+C<check_timers> repeatedly in a loop).  Its C<%args> are as follows:
 
   max_wait    Number indicating for how many seconds the loop
               should run before giving up and returning.
   min_timers  Only run until this many timers are left, not until
               they have all finished.
   interval    Number of seconds to wait before each iteration of
-              the loop. The default is .1.
+              the loop.  The default is .1.
 
-Some websites have timers running constantly, that are never cleared. For
+Some websites have timers running constantly, that are never cleared.  For
 these, you will usually need to set a value for C<min_timers> (or
 C<max_wait>) to avoid an infinite loop.
 
@@ -322,25 +325,48 @@ opened and returned; in single-window mode, C<undef> is returned.
 
 =back
 
+=head2 Methods for Fetching Images
+
+=over
+
+=item fetch_images ( $new_val )
+
+A boolean indicating whether images should be fetched.  Some sites use
+images with special URLs as cookies and refuse to work if those images are
+not fetched.  Most of the time, however, you probably want to leave this
+off, for speed's sake.
+
+Setting this does not affect any pages that are already loaded.
+
+=item image_handler ( $coderef )
+
+A subroutine for handling any images that are fetched.  The subroutine will
+be passed three arguments: 0) the WWW::Scripter object, 1) the image or
+input element and 2) the response object.
+
+=back
+
 =head2 Methods for Plugins, Scripting, etc.
 
 =over
 
 =item eval ( $code [, $scripting_language] )
 
-Evaluates the C<$code> passed to it. This method dies if there is no script
+Evaluates the C<$code> passed to it.  This method dies if there is no
+script
 handler registered for the C<$scripting_language>.
 
 =item use_plugin ( $plugin_name [, @options] )
 
 This will automatically C<require()> the plugin for you, and then
-initialise it. To pass extra
+initialise it.  To pass extra
 options to the plugin after loading it, just use the same syntax again.
 This will return the plugin object if the plugin has one.
 
 =item plugin ( $plugin_name )
 
-This will return the plugin object, if it has one. Some plugins may provide
+This will return the plugin object, if it has one.  Some plugins may
+provide
 this as a way to communicate directly with the plugin.
 
 You can also use the return value as a boolean, to see whether a plugin is
@@ -350,28 +376,28 @@ loaded.
 
 This returns a boolean indicating whether HTML pages are parsed and turned
 into a DOM tree.  It is true
-by default. You can disable HTML parsing by passing a false value. Of
+by default.  You can disable HTML parsing by passing a false value.  Of
 course, if you are using WWW::Scripter to begin with, you won't want to
-turn this off will you? Nevertheless, this is useful for fetching files
+turn this off will you?  Nevertheless, this is useful for fetching files
 behind the scenes when just the file contents are needed.
 
 =item scripts_enabled ( $new_val )
 
-This returns a boolean indicating whether scripts are enabled. It is true
-by default. You can disable scripts by passing a false value. When you
+This returns a boolean indicating whether scripts are enabled.  It is true
+by default.  You can disable scripts by passing a false value.  When you
 disable scripts, event handlers are also disabled, as is the registration
 of event handlers by HTML event attributes.
 
 =item script_handler ( $language_re, $object )
 
 A script handler is a special object that knows how to run scripts in a
-particular language. Use this method to register such an object.
+particular language.  Use this method to register such an object.
 
 C<$language_re> is a regular expression that will be matched against a
 scripting language name (from a 'language' HTML attribute) or MIME type
-(<script type=...). You can also use the special value 'default'.
+(<script type=...).  You can also use the special value 'default'.
 
-C<$object> is the script handler object. For its interface, 
+C<$object> is the script handler object.  For its interface, 
 see 
 L</SCRIPT HANDLERS>, below.
 
@@ -637,5 +663,5 @@ And, if you are curious, have a look at the plugin version of
 WWW::Mechanize and WWW::Mechanize::Plugin::DOM (experimental and now 
 deprecated) that this was originally
 based on:
-L<http://www-mechanize.googlecode.com/svn/wm/branches/plugins/>
+http://www-mechanize.googlecode.com/svn/wm/branches/plugins/
 

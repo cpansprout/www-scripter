@@ -1,5 +1,9 @@
 Revision history for WWW::Scripter
 
+0.028  April Fools’ Day, 2012
+       New fetch_images and image_handler  features,  as suggested by
+       John Hulala [rt.cpan.org #75696].
+
 0.027  18 March, 2012
      • The navigator object now has a cookieEnabled property.  Thanks
        to John Hulala for the suggestion.  (I wasn’t aware that brows-

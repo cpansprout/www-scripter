@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.027 (alpha)
+WWW::Scripter, version 0.028 (alpha)
 
 For scripting web sites that have scripts
 
@@ -9,6 +9,11 @@ vides scripting support.
 RECENT CHANGES
 
 See the Changes file for the long version.
+
+0.028
+-----
+New fetch_images  and  image_handler  features,  as suggested by John
+Hulala [rt.cpan.org #75696].
 
 0.027
 -----
@@ -22,15 +27,6 @@ See the Changes file for the long version.
 -----
 The  history  property is now listed  in  %WindowInterface,  allowing
 scripts to access it.  Thanks to John Hulala for reporting the  issue.
-
-0.025
------
-• The get, head, post, put and request methods now localise *_ to pro-
-  tect a tied  $_  from modification by other  modules  WWW::Scripter
-  depends on.
-• The status and defaultStatus methods have been removed due to a con-
-  flict with a WWW::Mechanize method.
-• A memory leak in the ->frames method has been fixed.
 
 
 INSTALLATION

@@ -180,13 +180,6 @@ use tests 1; # Referrer header when fetching a script
 
 	sub request {
 		my($self, $request, $proxy, $arg) = @_;
-	
-		my $h = new HTTP::Headers;
-		$h->header('Content-Encoding', 'gzip');
-		my $zhello = join '', map chr hex, qw[
-		 1f 8b 08 00 02 5b 09 49 00 03 cb 48 cd c9 c9 07 00 86 a6
-		 10 36 05 00 00 00
-		];
 		new HTTP::Response 200, 'OK', undef, $request->referer
 	}
 }
