@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.028';
+our $VERSION = '0.029';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 
@@ -173,7 +173,8 @@ sub follow_link {
 	    $self->warn( q{follow_link(n=>"all") is not valid} );
 	}
 
-	if(my $link = $self->find_link(%parms)) {
+	my $link = $self->find_link(%parms);
+	if($link and tag $link =~ '^a') {
 		my $follow;
 		my $dom_link = $dom_obj{$link};
 		$dom_link->trigger_event('click',
@@ -582,6 +583,15 @@ defined $offset or Carp::cluck;
 	);
 }
 
+my %link_tags = (
+    a      => 'href',
+    area   => 'href',
+    frame  => 'src',
+    iframe => 'src',
+    link   => 'href',
+    meta   => 'content',
+);
+
 # ~~~ This ends up creating a new WSL object every time we come back to the
 #     same page. We need a way to make this more efficient. The same goes
 #     for images.
@@ -589,7 +599,17 @@ sub _extract_links {
 	my $self = shift;
 	my @links;
 	if (my $doc = $self->document) {
-		tie @links, WWW'Scripter'Links:: => scalar $doc->links;
+		tie @links, WWW'Scripter'Links:: =>
+		 HTML::DOM::NodeList::Magic->new(
+		    sub { grep {
+		        my $tag = tag $_;
+			no warnings 'uninitialized';
+		        exists $link_tags{$tag}
+		            and defined $_->attr($link_tags{$tag})
+			    and $tag ne 'meta'
+		                || lc $_->attr('http-equiv') eq 'refresh'
+		    } $doc->descendants }, $doc
+		 );
 	}
 	# banana
 	$self->{links} = \@links;
@@ -1750,8 +1770,14 @@ sub FETCH {
  my $self = shift;
  for(shift) {
   return
-   $_ == 0 ? $$self->attr('href')        : # url
-   $_ == 1 ? $$self->as_text             : # text
+   $_ == 0 ? $$self->tag eq 'meta'         # url
+              ? $$self->attr('content') =~ /^\d+\s*;\s*url\s*=\s*(\S+)/i
+                 ? do { my $url = $1;
+                        $url =~ s/^"(.+)"$/$1/ or $url =~ s/^'(.+)'$/$1/;
+                        $url }
+                 : undef
+              : $$self->attr($link_tags{$$self->tag}) :
+   $_ == 1 ? $$self->tag eq 'a' ? $$self->as_text : undef : # text
    $_ == 2 ? $$self->attr('name')        : # name
    $_ == 3 ? $$self->tag                 : # tag
    $_ == 4 ? $$self->ownerDocument->base : # base

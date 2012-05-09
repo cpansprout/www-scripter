@@ -1,5 +1,13 @@
 Revision history for WWW::Scripter
 
+0.029  13 May, 2012
+     • The  WWW::Mechanize  link methods now  include  meta,
+       link and (i)frame elements, just like WWW::Mechanize
+       [rt.cpan.org #76984].
+     • WWW::Mechanize-style link objects for area elements now return
+       undef for the text  method,  rather than the empty string,  to
+       conform to WWW::Mechanize.
+
 0.028  April Fools’ Day, 2012
        New fetch_images and image_handler  features,  as suggested by
        John Hulala [rt.cpan.org #75696].

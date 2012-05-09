@@ -17,7 +17,7 @@ $w->get(
  . q|data:text/html,<iframe name=crelp>|
  .q|"></iframe><a target=crelp href="data:text/html,">|
 );
-$w->follow_link(n=>1);
+$w->follow_link(url_regex=>qr/data:/);
 $w->frames->[0]->get('about:blank');
 for my $l($w->document->links->[0]) {
  $l->href("data:text/html,czeen");

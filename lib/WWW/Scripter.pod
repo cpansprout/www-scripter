@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.028 (alpha)
+0.029 (alpha)
 
 =head1 SYNOPSIS
 
@@ -55,6 +55,7 @@ explicit targets.
 =head1 INTERFACE
 
 See L<WWW::Mechanize> for a vast list of methods that this module inherits.
+(See also the L</Notes About WWW::Mechanize Methods>, below.)
 
 In addition to those, this module implements the well-known Window 
 interface,
@@ -432,8 +433,8 @@ course, only works after C<back>.
 =item clear_history ( $including_current_page )
 
 This clears the history, preventing C<back> from working until after the
-next request, and freeing up some memory. If supplied with a true
-argument, it also clears the current page. It returns C<$w>.
+next request, and freeing up some memory.  If supplied with a true
+argument, it also clears the current page.  It returns C<$w>.
 
 =item max_history
 
@@ -446,6 +447,26 @@ argument, it also clears the current page. It returns C<$w>.
 These two return what was passed to the constructor, optionally setting it.
 
 =back
+
+=head2 Notes About WWW::Mechanize Methods
+
+=over
+
+=item links
+
+WWW::Scripter overrides the C<_extract_links> method that C<links>,
+C<find_link> and C<follow_link> use behind the scenes, to make it use the
+HTML DOM tree instead of the source code of the page.
+
+This overridden method tries hard to match WWW::Mechanize as closely as
+possible, which means it includes link tags, (i)frames, and meta tags with
+http-equiv set to 'refresh'.
+
+This is significantly different from C<< $w->document->links >>, an
+HTML::DOM method that follows the W3C DOM spec and returns only 'a' and
+'area' elements.
+
+=back
 
 =head1 EVENTS
 

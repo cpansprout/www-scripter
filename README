@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.028 (alpha)
+WWW::Scripter, version 0.029 (alpha)
 
 For scripting web sites that have scripts
 
@@ -9,6 +9,11 @@ vides scripting support.
 RECENT CHANGES
 
 See the Changes file for the long version.
+
+0.029
+-----
+The WWW::Mechanize  link methods now include meta,  link and (i)frame
+elements, just like WWW::Mechanize [rt.cpan.org #76984].
 
 0.028
 -----
@@ -51,7 +56,7 @@ PREREQUISITES
 This module requires  perl  5.8.3 or higher (5.8.4  or  higher  recom-
 mended)  and the following modules,  which can be found on the  CPAN:
 
-  HTML::DOM 0.045 or higher
+  HTML::DOM 0.053 or higher
   LWP 5.77 or higher
   URI
   WWW::Mechanize 1.2 or higher

@@ -65,11 +65,11 @@ $w->get(
  . q|data:text/html,<iframe name=crelp>|
  .q|"></iframe><a target=crelp href="data:text/html,">|
 );
-$w->follow_link(n=>1);
+$w->follow_link(n=>2);
 is $w->frames->[0]->frames->[0]->uri, 'data:text/html,',
  'named subframe as target';
 $w->frames->[0]->get('about:blank');
-$w->follow_link(n=>1);
+$w->follow_link(n=>2);
 is $g->windows, 2, 'named target opening a new window';
 $neww = $g->active_window;
 is $neww->uri, 'data:text/html,',
@@ -80,7 +80,7 @@ for($w->document->links->[0]) {
 }
 like $neww->uri, qr 'czeen', 'named target uses existing new window';
 $w->reload; # We should now have our crelp iframe back
-$w->follow_link(n=>1);
+$w->follow_link(n=>2);
 is $w->frames->[0]->frames->[0]->uri, 'data:text/html,',
  'named subframe takes precedence over new window';
 $w->get('about:blank');
