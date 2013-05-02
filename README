@@ -10,6 +10,11 @@ RECENT CHANGES
 
 See the Changes file for the long version.
 
+NEXT
+----
+• The "content"  method no longer  fails when  "dom_enabled" has been
+  unset [rt.cpan.org #84639].
+
 0.029
 -----
 The WWW::Mechanize  link methods now include meta,  link and (i)frame

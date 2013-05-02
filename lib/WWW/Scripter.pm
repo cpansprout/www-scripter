@@ -146,7 +146,7 @@ sub title { (shift->document||return)->title(@_) }
 
 sub content {
 	my $self = shift;
-	if($self->is_html) {
+	if($self->is_html && $self->document) {
 		my %parms = @_;
 		my $cs = (my $doc = $self->document)->charset;;
 		if(exists $parms{format} && $parms{format} eq 'text') {

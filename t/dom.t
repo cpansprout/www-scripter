@@ -182,14 +182,15 @@ END
 	  'window event handlers are not called when scripts are off';
 }
 
-use tests 2; # dom_enabled
+use tests 3; # dom_enabled
 {
 	my $m = new WWW::Scripter;
 	ok $m->dom_enabled(0), 'DOM enabled by default';
 
-	$m->get('data:text/html,');
+	$m->get('data:text/html,123');
 	ok !$m->document, 'dom_enabled'
 	 or diag $m->document->URL;
+	is $m->content, '123', 'content works when !dom_enabled';
 }
 
 use tests 1; # DOM tree ->charset

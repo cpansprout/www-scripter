@@ -1,5 +1,9 @@
 Revision history for WWW::Scripter
 
+NEXT
+     • The "content"  method no longer  fails when "dom_enabled"  has
+       been unset [rt.cpan.org #84639].
+
 0.029  13 May, 2012
      • The  WWW::Mechanize  link methods now  include  meta,
        link and (i)frame elements, just like WWW::Mechanize
