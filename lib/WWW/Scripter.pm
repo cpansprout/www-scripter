@@ -312,7 +312,7 @@ sub _update_page {
      !defined $$self{Scripter_dumb} || $$self{Scripter_dumb}
      and $self->is_html
     ) {
-        $self->update_html($content);
+        $res = $self->update_html($content);
     }
     else {
         $self->{content} = $content;
@@ -349,7 +349,7 @@ sub update_html {
 	if(my $doc = $document{$res}) {
 		$self->document($doc);
 		$self->{form} = ($self->{forms} = $doc->forms)->[0];
-		return;
+		return $res;
 	}
 
 	my $life_raft = $self;
@@ -554,7 +554,7 @@ sub update_html {
 	# banana
 	$self->{form} ||= $self->{forms}[0];
 
-	return;
+	return $self->{res};
 }
 
 # Not an override, but used by update_html

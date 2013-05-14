@@ -49,10 +49,7 @@ SKIP: {
     like $w->content, qr/DESIRED CONTENT/,
          "'content' method must return desired content";
 
-    TODO: {
-        local $TODO = '[rt.cpan.org #84472]';
-        $w->get('fake:///R1');
-        like $w->content, qr/DESIRED CONTENT/,
-             "'content' method must return desired content";
-    }
+    $w->get('fake:///R1');
+    like $w->content, qr/DESIRED CONTENT/,
+         "'content' method must return desired content";
 }

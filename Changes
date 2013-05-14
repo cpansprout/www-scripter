@@ -3,6 +3,9 @@ Revision history for WWW::Scripter
 NEXT
      • The "content"  method no longer  fails when "dom_enabled"  has
        been unset [rt.cpan.org #84639].
+     • The "content" method now returns  the correct content when the
+       request chain contains both  server- and client-side redirects
+       [rt.cpan.org #84472].
 
 0.029  13 May, 2012
      • The  WWW::Mechanize  link methods now  include  meta,
