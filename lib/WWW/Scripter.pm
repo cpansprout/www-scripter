@@ -2,7 +2,7 @@ use 5.006;
 
 package WWW::Scripter;
 
-our $VERSION = '0.029';
+our $VERSION = '0.030';
 
 use strict; use warnings; no warnings qw 'utf8 parenthesis bareword';
 

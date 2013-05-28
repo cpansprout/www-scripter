@@ -5,7 +5,7 @@ WWW::Scripter - For scripting web sites that have scripts
 
 =head1 VERSION
 
-0.029 (alpha)
+0.030 (alpha)
 
 =head1 SYNOPSIS
 
@@ -652,7 +652,7 @@ L<Tie::RefHash::Weak> 0.08 or higher for perl 5.8.x.
 
 =head1 AUTHOR & COPYRIGHT
 
-Copyright (C) 2009-12, Father Chrysostomos (sprout at, um, cpan dot org)
+Copyright (C) 2009-13, Father Chrysostomos (sprout at, um, cpan dot org)
 
 This program is free software; you may redistribute or modify it (or both)
 under the same terms as perl.

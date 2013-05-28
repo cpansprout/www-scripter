@@ -34,6 +34,7 @@ t/location.t
 t/navigator.t
 t/plugin-cloning.t
 t/plugins.t
+t/rt-84472.t
 t/scripts.t
 t/scroll.t
 t/status.t

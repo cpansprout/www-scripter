@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.029 (alpha)
+WWW::Scripter, version 0.030 (alpha)
 
 For scripting web sites that have scripts
 
@@ -10,8 +10,8 @@ RECENT CHANGES
 
 See the Changes file for the long version.
 
-NEXT
-----
+0.030
+-----
 • The "content"  method no longer  fails when  "dom_enabled" has been
   unset [rt.cpan.org #84639].
 • The "content"  method  now returns  the  correct content  when  the
@@ -87,7 +87,7 @@ Or try using man (it's faster, in my experience):
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2009-12 Father Chrysostomos
+Copyright (C) 2009-13 Father Chrysostomos
 
 This program is free software; you may redistribute it, modify it, or
 both, under the same terms as perl.

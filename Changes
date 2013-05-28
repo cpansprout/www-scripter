@@ -1,6 +1,6 @@
 Revision history for WWW::Scripter
 
-NEXT
+0.030  28 May, 2013
      • The "content"  method no longer  fails when "dom_enabled"  has
        been unset [rt.cpan.org #84639].
      • The "content" method now returns  the correct content when the
