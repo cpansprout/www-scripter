@@ -19,6 +19,7 @@ t/dom-no-lang.html
 t/dom-onload.html
 t/dom-test-script
 t/dom.t
+t/double-colon.t
 t/dustbin-man.t
 t/empty-iframe.html
 t/events.t

@@ -1629,7 +1629,7 @@ use constant 1.03 our $_const = {
 	cnam => 3,
 	plat => 4,
 };
-{ no strict; delete @{__PACKAGE__.::}{_const => keys %$_const} }
+{ no strict; delete @{__PACKAGE__."::"}{_const => keys %$_const} }
 
 sub new {
 	weaken((my $self = bless[],pop)->[mech] = pop);
