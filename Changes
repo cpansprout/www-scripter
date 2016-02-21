@@ -1,5 +1,9 @@
 Revision history for WWW::Scripter
 
+0.031  21 February, 2016
+       WWW::Scripter  no longer fails to load  if  a  sub  named  ‘::’
+       exists.  Thanks to Don Silvia for reporting the bug.
+
 0.030  28 May, 2013
      • The "content"  method no longer  fails when "dom_enabled"  has
        been unset [rt.cpan.org #84639].
