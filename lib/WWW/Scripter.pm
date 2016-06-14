@@ -424,7 +424,9 @@ sub update_html {
 
 			        $code = decode $cs||$elem->charset
 			            ||$tree->charset||'latin1',
-			          $res->decoded_content(charset=>'none');
+			          $res->decoded_content(
+			            charset=>'none', raise_error=>1
+			          );
 			        
 			        
 			        $line = 1;

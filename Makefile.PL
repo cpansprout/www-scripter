@@ -29,6 +29,7 @@ my %prereq = (
 	HTTP::Message              => 1.34, # array ref headers
 	HTTP::Request              => 1.29, # URI instead of URI::URL
 	HTTP::Response              => 1.35, # likewise
+	IO::Uncompress::Gunzip      => 0,
 	List::Util                  => 0,
 	LWP                        => 5,
 	LWP::Protocol              => 0, # version 1.22 at the earliest
