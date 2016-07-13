@@ -16,6 +16,11 @@ for (
 ) {
     my ($req_path, $res_data) = @$_;
     my $is_redir = ref $res_data;
+    require HTTP::Config; # probably loaded already, but just in case
+    # Suppress bogus uninit warning in older HTTP::Config versions
+    local $SIG{__WARN__} =
+        sub { return if $_[0] =~ /uninitialized/; warn $_[0] }
+      if HTTP::Config->VERSION < 6.09;
     $w->set_my_handler(
         'request_send',
         sub {
