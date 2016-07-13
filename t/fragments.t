@@ -8,7 +8,7 @@ use Test::More;
 use URI'file;
 use WWW::Scripter;
 
-use tests 13;
+use tests 15;
 
 $w = new WWW::Scripter;
 $w->get(my $url = new_abs URI'file "t/fragments.html");
@@ -35,3 +35,8 @@ is $w->uri, $url, 'but ->uri is still the same (with ->get)';
 $w->get("about:blank#foo");
 is $w->uri, "about:blank",
  'URL used when fetching fraggy URL directly (not adding to existing URL)';
+
+$w->get("data:text/html,");
+$w->get("#foo");
+is $w->location, "data:text/html,#foo", 'location with data: and fragment';
+is $w->uri, 'data:text/html,', '->uri after fetching frag on data: page';

@@ -18,7 +18,12 @@ my %prereq = (
 	CSS::DOM::Interface          => 0,
 	Encode                     => 0,
 	Exporter                   => 5.57,
-	HTML::DOM                  =>  .045, # weaken_response
+# For data: URLs with fragments, we need HTML::DOM .057, to work around
+# URI bug #115339.  When the URI bug is fixed, we can revert the required
+# version of HTML::DOM and depend on a newer URI (or do it conditionally
+# based on whether the newer HTML::DOM is installed).
+#	HTML::DOM                  =>  .045, # weaken_response
+	HTML::DOM                   =>  .057, # data: and fragments
 	HTML::DOM::Collection        => 0,
 	HTML::DOM::EventTarget       =>  .053, # DOMAttrModified events with
 	                                            # correct type and can-

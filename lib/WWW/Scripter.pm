@@ -267,11 +267,21 @@ sub request {
   }
 }
 
-# Protect against tied $_
-sub get { return SUPER::get{@_} for my $foo }
-sub put { return SUPER::put{@_} for my $foo }
-sub post { return SUPER::post{@_} for my $foo }
-sub head { return SUPER::head{@_} for my $foo }
+for my $method (qw < get put post head >){
+ no strict 'refs';
+ *$method = sub {
+   for(my $foo) { # protect against tied $_
+     my ($self, $uri) = (shift, shift);
+     $uri = $uri->url if ref $uri eq 'WWW::Mechanize::Link';
+     my $abs = new_abs URI $uri, my $base = $self->base;
+     # URI screws up data fragments
+     if ($abs =~ /^data:#/i && $abs ne $uri && $uri =~ /^#/) {
+         $abs = "$base$uri";
+     }
+     return $self->${\"LWP::UserAgent::$method"}($abs, @_);
+   }
+ };
+}
 
 
 # The only difference between this one and Mech is the args to
