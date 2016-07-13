@@ -62,6 +62,11 @@ my %prereq = (
 	utf8          => 0,
 );
 
+my %m = (
+ resources =>
+  { repository => 'https://github.com/cpansprout/www-scripter' }
+);
+
 WriteMakefile(
     NAME            => 'WWW::Scripter',
     AUTHOR          => 'Father Chrysostomos <sprout at, um, cpan dot org>',
@@ -69,6 +74,7 @@ WriteMakefile(
     ABSTRACT_FROM   => 'lib/WWW/Scripter.pod',
     PL_FILES            => {},
     PREREQ_PM          => \%prereq,
+    META_MERGE         => \%m,
     dist               => { COMPRESS => 'gzip -9f', SUFFIX => 'gz',
                             TAR => 'COPYFILE_DISABLE=1 tar' },
     clean              => { FILES => 'WWW-Scripter-*' },
