@@ -278,6 +278,8 @@ for my $method (qw < get put post head >){
      if ($abs =~ /^data:#/i && $abs ne $uri && $uri =~ /^#/) {
          $abs = "$base$uri";
      }
+     # For get and put, we have replicated here what the Mech methods do,
+     # so for speed’s sake go straight to LWP.
      return $self->${\"LWP::UserAgent::$method"}($abs, @_);
    }
  };
