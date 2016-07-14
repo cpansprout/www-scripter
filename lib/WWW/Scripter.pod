@@ -635,7 +635,8 @@ circular references.
 
 =back
 
-To report a bug, please send an e-mail to C<bug-WWW-Scripter@rt.cpan.org>
+To report a bug, please send an e-mail to
+L<bug-WWW-Scripter@rt.cpan.org|mailto:bug-WWW-Scripter@rt.cpan.org>
 or use the web interface at L<http://rt.cpan.org/>.
 
 =head1 PREREQUISITES
