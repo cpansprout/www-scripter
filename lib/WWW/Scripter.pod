@@ -446,7 +446,7 @@ argument, it also clears the current page.  It returns C<$w>.
 
 These two return what was passed to the constructor, optionally setting it.
 
-=back
+=back
 
 =head2 Notes About WWW::Mechanize Methods
 
@@ -534,6 +534,8 @@ return a coderef that runs the C<$code>.
 
 If it could not create a code ref, it should return C<undef> and put the
 error message, if any, in C<$@>.
+
+=back
 
 =head1 WRITING PLUGINS
 
@@ -633,7 +635,7 @@ circular references.
 
 =back
 
-To report a bug, please send an e-mail to L<bug-WWW-Scripter@rt.cpan.org>
+To report a bug, please send an e-mail to C<bug-WWW-Scripter@rt.cpan.org>
 or use the web interface at L<http://rt.cpan.org/>.
 
 =head1 PREREQUISITES
