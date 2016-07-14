@@ -10,6 +10,11 @@ RECENT CHANGES
 
 See the Changes file for the long version.
 
+0.032
+-----
+• Minor documentation fixes,  with thanks to Jim Keenan  [rt.cpan.org
+  #89070].
+
 0.031
 -----
 WWW::Scripter no longer fails to load if a sub named ‘::’ exists.

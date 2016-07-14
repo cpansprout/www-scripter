@@ -1,5 +1,9 @@
 Revision history for WWW::Scripter
 
+0.032
+     • Minor   documentation  fixes,  with   thanks  to  Jim   Keenan
+       [rt.cpan.org #89070].
+
 0.031  21 February, 2016
        WWW::Scripter  no longer fails to load  if  a  sub  named  ‘::’
        exists.  Thanks to Don Silvia for reporting the bug.
