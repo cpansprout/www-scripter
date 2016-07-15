@@ -3,6 +3,7 @@ Revision history for WWW::Scripter
 0.032
      • Minor   documentation  fixes,  with   thanks  to  Jim   Keenan
        [rt.cpan.org #89070].
+     • Links to fragments on data URL pages now work.
 
 0.031  21 February, 2016
        WWW::Scripter  no longer fails to load  if  a  sub  named  ‘::’
