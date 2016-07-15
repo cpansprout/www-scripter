@@ -14,6 +14,7 @@ See the Changes file for the long version.
 -----
 • Minor documentation fixes,  with thanks to Jim Keenan  [rt.cpan.org
   #89070].
+• Links to fragments on data URL pages now work.
 
 0.031
 -----
