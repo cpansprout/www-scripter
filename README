@@ -1,4 +1,4 @@
-WWW::Scripter, version 0.031 (alpha)
+WWW::Scripter, version 0.032 (alpha)
 
 For scripting web sites that have scripts
 
@@ -27,11 +27,6 @@ WWW::Scripter no longer fails to load if a sub named ‘::’ exists.
 • The "content"  method  now returns  the  correct content  when  the
   request chain  contains  both  server-  and  client-side  redirects
   [rt.cpan.org #84472].
-
-0.029
------
-The WWW::Mechanize  link methods now include meta,  link and (i)frame
-elements, just like WWW::Mechanize [rt.cpan.org #76984].
 
 
 INSTALLATION

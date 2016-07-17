@@ -1,6 +1,6 @@
 Revision history for WWW::Scripter
 
-0.032
+0.032  17 July, 2016
      • Minor   documentation  fixes,  with   thanks  to  Jim   Keenan
        [rt.cpan.org #89070].
      • Links to fragments on data URL pages now work.

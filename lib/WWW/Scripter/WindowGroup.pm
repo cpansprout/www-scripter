@@ -1,6 +1,6 @@
 package WWW::Scripter::WindowGroup;
 
-$VERSION = '0.031'; # update POD, too
+$VERSION = '0.032'; # update POD, too
 
 use Carp;
 use WWW'Scripter;
@@ -66,7 +66,7 @@ WWW::Scripter::WindowGroup - Multiple-window browsing environment
 
 =head1 VERSION
 
-Version 0.031
+Version 0.032
 
 =head1 SYNOPSIS
 
