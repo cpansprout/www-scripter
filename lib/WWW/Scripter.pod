@@ -10,7 +10,7 @@ WWW::Scripter - For scripting web sites that have scripts
 =head1 SYNOPSIS
 
   use WWW::Scripter;
-  $w = new WWW::Scripter;
+  $w = WWW::Scripter->new;
 
   $w->use_plugin('Ajax');  # packaged separately
   
@@ -67,7 +67,7 @@ can think of it as short for either 'WWW::Scripter' or 'window'.
 
 =head2 Constructor
 
- my $w = new WWW::Scripter %args
+ my $w = WWW::Scripter->new(%args)
 
 The constructor accepts named arguments.  There are only two that 
 WWW::Scripter itself deals with directly.  The rest are passed on to the
